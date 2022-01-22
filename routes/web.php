@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-Route::get('/test', [PageController::class, 'index'])->middleware(['auth'])->name('test');
+Route::get('/items', [PageController::class, 'items'])->middleware(['auth'])->name('items');
 
 require __DIR__.'/auth.php';
 
