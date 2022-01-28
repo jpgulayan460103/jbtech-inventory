@@ -1,3 +1,8 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+.custom-pointer{
+    cursor: pointer;
+    color: blue;
+}

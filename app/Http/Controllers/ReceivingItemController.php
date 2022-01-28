@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ItemDetail;
-use App\Models\Item;
+use App\Models\ReceivingItem;
 use Illuminate\Http\Request;
 
-class ItemDetailController extends Controller
+class ReceivingItemController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index()
     {
-        return ItemDetail::with('warehouse')->where('item_id',$id)->paginate(10);
+        //
     }
 
     /**
@@ -42,10 +41,10 @@ class ItemDetailController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\ItemDetail  $itemDetail
+     * @param  \App\Models\ReceivingItem  $receivingItem
      * @return \Illuminate\Http\Response
      */
-    public function show(ItemDetail $itemDetail)
+    public function show(ReceivingItem $receivingItem)
     {
         //
     }
@@ -53,10 +52,10 @@ class ItemDetailController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\ItemDetail  $itemDetail
+     * @param  \App\Models\ReceivingItem  $receivingItem
      * @return \Illuminate\Http\Response
      */
-    public function edit(ItemDetail $itemDetail)
+    public function edit(ReceivingItem $receivingItem)
     {
         //
     }
@@ -65,10 +64,10 @@ class ItemDetailController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ItemDetail  $itemDetail
+     * @param  \App\Models\ReceivingItem  $receivingItem
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ItemDetail $itemDetail)
+    public function update(Request $request, ReceivingItem $receivingItem)
     {
         //
     }
@@ -76,10 +75,10 @@ class ItemDetailController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ItemDetail  $itemDetail
+     * @param  \App\Models\ReceivingItem  $receivingItem
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ItemDetail $itemDetail)
+    public function destroy(ReceivingItem $receivingItem)
     {
         //
     }

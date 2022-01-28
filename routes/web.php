@@ -24,6 +24,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 Route::get('/items', [PageController::class, 'items'])->middleware(['auth'])->name('items');
+Route::get('/requests', [PageController::class, 'requests'])->middleware(['auth'])->name('requests');
 
 require __DIR__.'/auth.php';
 

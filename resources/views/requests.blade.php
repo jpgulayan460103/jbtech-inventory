@@ -6,7 +6,7 @@
     </x-slot>
 
     @section('content')
-    <h1 style="text-align: center">ITEMS</h1>
-    <item-index :warehouses="{{ $warehouses }}" user="{{ auth()->user()->id }}"></item-index>
+    <h1 style="text-align: center">REQUESTS</h1>
+    <requests-index :warehouses="{{ $warehouses }}"></requests-index>
     @endsection
 </x-app-layout>

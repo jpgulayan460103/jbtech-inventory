@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRequestItemDetailsTable extends Migration
+class CreateReceivingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,11 @@ class CreateRequestItemDetailsTable extends Migration
      */
     public function up()
     {
-        Schema::create('request_item_details', function (Blueprint $table) {
+        Schema::create('receivings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_detail_id')->nullable();
-            $table->foreign('item_detail_id')->references('id')->on('item_details')->onDelete('cascade');
+            $table->string('remarks')->nullable();
+            $table->unsignedBigInteger('received_by_id')->nullable();
+            $table->foreign('received_by_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -29,6 +30,6 @@ class CreateRequestItemDetailsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('request_item_details');
+        Schema::dropIfExists('receivings');
     }
 }

@@ -19,6 +19,7 @@ class CreateItemsTable extends Migration
             $table->string('category')->nullable();
             $table->integer('reorder_level')->nullable();
             $table->boolean('is_active')->nullable();
+            $table->string('item_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

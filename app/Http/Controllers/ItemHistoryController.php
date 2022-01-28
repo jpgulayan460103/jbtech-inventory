@@ -12,9 +12,9 @@ class ItemHistoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id)
     {
-        //
+        return ItemHistory::with('item','item_detail.warehouse')->where('item_id',$id)->orderBy('warehouse_id')->orderBy('id', 'desc')->paginate(10);
     }
 
     /**
