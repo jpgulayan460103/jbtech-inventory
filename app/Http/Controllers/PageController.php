@@ -17,4 +17,9 @@ class PageController extends Controller
         $warehouses = Warehouse::all();
         return view('requests', compact('warehouses'));
     }
+    public function create_request(Request $request)
+    {
+        $warehouses = Warehouse::all();
+        return view('create-request', compact('warehouses'));
+    }
 }

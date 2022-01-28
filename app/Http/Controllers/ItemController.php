@@ -20,6 +20,11 @@ class ItemController extends Controller
         return Item::paginate(10);
     }
 
+    public function all()
+    {
+        return Item::all();
+    }
+
     /**
      * Show the form for creating a new resource.
      *

@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
+Route::get('/all/items', 'App\Http\Controllers\ItemController@all')->name('api.item.all');
 Route::prefix('items')->group(function () {
     Route::get('/', 'App\Http\Controllers\ItemController@index')->name('api.item.index');
     Route::get('/{id}/details', 'App\Http\Controllers\ItemDetailController@index')->name('api.item.details');

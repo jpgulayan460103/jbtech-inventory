@@ -42,6 +42,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('requests') }}">{{ __('Requests') }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('create-request') }}">{{ __('Create Request') }}</a>
+                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
