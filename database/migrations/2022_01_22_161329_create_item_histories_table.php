@@ -20,6 +20,7 @@ class CreateItemHistoriesTable extends Migration
             $table->unsignedBigInteger('item_detail_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('warehouse_id')->nullable();
+            $table->integer('quantity')->nullable();
             $table->integer('stock')->nullable();
             $table->integer('remain')->nullable();
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');

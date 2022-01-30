@@ -37,9 +37,6 @@
                             <a class="nav-link" href="{{ route('items') }}">{{ __('Items') }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('items') }}">{{ __('Receiving') }}</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('requests') }}">{{ __('Requests') }}</a>
                         </li>
                         <li class="nav-item">

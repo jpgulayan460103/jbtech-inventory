@@ -7,6 +7,6 @@
 
     @section('content')
     <h1 style="text-align: center">ITEMS</h1>
-    <item-index :warehouses="{{ $warehouses }}" user="{{ auth()->user()->id }}"></item-index>
+    <item-index :warehouses="{{ $warehouses }}" :user="{{ $user }}"></item-index>
     @endsection
 </x-app-layout>

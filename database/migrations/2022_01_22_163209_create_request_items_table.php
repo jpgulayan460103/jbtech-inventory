@@ -17,10 +17,15 @@ class CreateRequestItemsTable extends Migration
             $table->id();
             $table->string('customer_name')->nullable();
             $table->unsignedBigInteger('requester_id')->nullable();
+            $table->unsignedBigInteger('warehouse_id')->nullable();
+            $table->unsignedBigInteger('processor_id')->nullable();
             $table->string('status')->nullable();
+            $table->text('remarks')->nullable();
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('requester_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('processor_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
         });
     }
 

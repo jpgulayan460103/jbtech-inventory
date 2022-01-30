@@ -17,9 +17,11 @@ class ItemHistory extends Model
         'item_id',
         'item_detail_id',
         'user_id',
+        'quantity',
         'stock',
         'remain',
         'warehouse_id',
+        'request_item_id',
     ];
 
     public function item()

@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item;
+use App\Models\ItemDetail;
+use App\Models\ItemHistory;
 use App\Models\RequestItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RequestItemController extends Controller
 {
@@ -14,7 +18,12 @@ class RequestItemController extends Controller
      */
     public function index()
     {
-        //
+        $request_item = RequestItem::with(
+            'warehouse',
+            'requester',
+            'processor',
+        )->paginate(20);
+        return $request_item;
     }
 
     /**
@@ -35,7 +44,17 @@ class RequestItemController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $request_item = RequestItem::create($request->all());
+            $items = $request->items;
+            $request_item->items()->createMany($items);
+            DB::commit();
+            return $request_item;
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        return $request_item;
     }
 
     /**
@@ -81,5 +100,53 @@ class RequestItemController extends Controller
     public function destroy(RequestItem $requestItem)
     {
         //
+    }
+
+    public function scan(Request $request)
+    {
+        $item_detail = ItemDetail::with('item')
+        ->where('serial_number',$request->scanned)
+        ->where('warehouse_id',$request->warehouse_id)
+        ->first();
+        return $item_detail;
+    }
+
+    public function process(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $request_item = RequestItem::find($id);
+            $request_item->status = "processed";
+            $request_item->processor_id = $request->user_id;
+            $request_item->save();
+            foreach ($request->items as $itemArray) {
+                $item_detail = ItemDetail::find($itemArray['id']);
+                if($item_detail->quantity != 0){
+                    $old_quantity = $item_detail->quantity;
+                    $item = Item::find($item_detail->item_id);
+                    $old_total_quantity_1 = $item->total_quantity_1;
+                    $old_total_quantity_2 = $item->total_quantity_2;
+                    $item_detail->quantity = 0;
+                    $item_detail->save();
+                    $item = Item::find($item_detail->item_id);
+                    
+
+                    ItemHistory::create([
+                        'history_type' => 'out',
+                        'item_id' => $item->id,
+                        'item_detail_id' => $item_detail->id,
+                        'user_id' => $request->user_id,
+                        'warehouse_id' => $request->warehouse_id,
+                        'stock' => $request->warehouse_id == 1 ? $old_total_quantity_1  : $old_total_quantity_2 ,
+                        'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2 ,
+                        'request_item_id' => $id,
+                        'quantity' =>  $old_quantity,
+                    ]);
+                }
+            }
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
     }
 }

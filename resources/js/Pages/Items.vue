@@ -24,6 +24,19 @@
                                 {{ createItemFormError.name ? createItemFormError.name[0] : "" }}
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="reorder_level">Type</label>
+                            <select class="form-control" v-model="createItemFormData.item_type">
+                                <option value="per_box">Per Box</option>
+                                <option value="per_piece">Per Piece</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                        </div>
+
+
                         <div class="form-group">
                             <label for="reorder_level">Reorder Level</label>
                             <input type="number" min="0" class="form-control" v-model="createItemFormData.reorder_level" placeholder="Enter Reorder Level" required>
@@ -31,6 +44,7 @@
                                 Please choose a username.
                             </div>
                         </div>
+
                         
                         <button type="submit" class="btn btn-primary mt-4">Submit</button>
                         <button type="button" class="btn btn-danger mt-4" @click.prevent="resetForms()">Reset Form</button>
@@ -57,8 +71,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="serial_number">Quantity</label>
-                            <input type="number" min="1" class="form-control" v-model="addItemFormData.quantity" placeholder="Enter Quantity" required>
+                            <label for="serial_number">Quantity {{ selectedItem.item_type_string }}</label>
+                            <input type="number" min="1" class="form-control" v-model="addItemFormData.quantity" placeholder="Enter Quantity" required :disabled="selectedItem.item_type == 'per_piece'">
                             <div class="invalid-feedback">
                                 Please choose a username.
                             </div>
@@ -89,6 +103,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th scope="col">Type</th>
                             <th scope="col">Category</th>
                             <th scope="col">Item Name</th>
                             <th scope="col">Reorder Level</th>
@@ -99,6 +114,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in items" :key="item.id" :class="{'table-secondary': (selectedItem.id == item.id)}">
+                            <td>{{ item.item_type_string }}</td>
                             <td>{{ item.category }}</td>
                             <td>{{ item.name }}</td>
                             <td>{{ item.reorder_level }}</td>
@@ -140,7 +156,7 @@
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
                             <th scope="col">Added</th>
-                            <th scope="col" class="text-center ">Actions</th>
+                            <!-- <th scope="col" class="text-center ">Actions</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -150,14 +166,14 @@
                             <td>{{ item.remarks }}</td>
                             <td>{{ item.warehouse.name }}</td>
                             <td>{{ item.created_at }}</td>
-                            <td class="text-center ">
+                            <!-- <td class="text-center ">
                                 <div class="flex space-x-4">
                                     <span class="custom-pointer" @click="selectItemDetail(item, index)">Add</span> |
                                     <span class="custom-pointer">View</span> |
                                     <span class="custom-pointer">Edit</span> |
                                     <span class="custom-pointer">Delete</span>
                                 </div>
-                            </td>
+                            </td> -->
                         </tr>
                     </tbody>
                 </table>
@@ -183,6 +199,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th scope="col">In/Out</th>
                             <th scope="col">Serial Number</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
@@ -193,9 +210,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in itemHistories" :key="item.id" :class="{'table-secondary': (selectedItemHistory.id == item.id)}">
+                        <tr v-for="(item, index) in itemHistories" :key="index" :class="{'table-secondary': (selectedItemHistory.id == item.id)}">
+                            <td>{{ item.history_type }}</td>
                             <td>{{ item.item_detail.serial_number }}</td>
-                            <td>{{ item.item_detail.quantity }}</td>
+                            <td>{{ item.quantity }}</td>
                             <td>{{ item.item_detail.remarks }}</td>
                             <td>{{ item.item_detail.warehouse.name }}</td>
                             <td>{{ item.item_detail.created_at }}</td>
@@ -232,7 +250,7 @@
                     category: "",
                     reorder: 0,
                     item_type: "per_box",
-                    user_id: this.user,
+                    user_id: this.user.id,
                 },
                 createItemFormError:{
 
@@ -243,7 +261,7 @@
                     quantity: 1,
                     item_id: null,
                     remarks: "",
-                    user_id: this.user,
+                    user_id: this.user.id,
                 },
                 addItemDetailFormErrors:{
                 },
@@ -296,7 +314,13 @@
                 this.createItemFormError = {};
                 axios.post('/api/items', this.createItemFormData)
                 .then(res => {
-
+                    this.$notify({
+                        group: 'foo',
+                        title: `Success`,
+                        text: `${this.createItemFormError.name} as been added`,
+                        type: "success"
+                    });
+                    this.getItem();
                 })
                 .catch(err => {
                     this.createItemFormError = err.response.data.errors;
@@ -331,8 +355,12 @@
                     ...this.addItemFormData,
                     name: item.name,
                     item_id: item.id,
-                    warehouse_id: this.warehouses[0].id
+                    per_piece: item.per_piece,
+                    warehouse_id: this.warehouses[0].id,
                 };
+                if(item.item_type == 'per_piece'){
+                    this.addItemFormData.quantity = 1;
+                }
                 this.itemDetails = [];
                 this.itemDetailPaginations = [];
                 this.itemDetailFilterData.page = 1;
@@ -358,7 +386,7 @@
                     category: "",
                     reorder: 0,
                     item_type: "per_box",
-                    user_id: this.user,
+                    user_id: this.user.id,
                 };
                 this.addItemFormData = {
                     name: "",
@@ -366,7 +394,7 @@
                     quantity: 1,
                     item_id: null,
                     remarks: "",
-                    user_id: this.user,
+                    user_id: this.user.id,
                 };
             },
             navigateItemPages(label){

@@ -6,7 +6,7 @@
     </x-slot>
 
     @section('content')
-    <h1 style="text-align: center">CREATE REQUEST</h1>
-    <requests-create :warehouses="{{ $warehouses }}" :user="{{ $user }}"></requests-create>
+    <h1 style="text-align: center">PROCESS REQUESTS</h1>
+    <process-request :created-request="{{ $created_request }}" :user="{{ $user }}"></process-request>
     @endsection
 </x-app-layout>

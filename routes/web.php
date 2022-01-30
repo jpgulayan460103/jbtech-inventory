@@ -26,9 +26,12 @@ Route::get('/dashboard', function () {
 Route::get('/items', [PageController::class, 'items'])->middleware(['auth'])->name('items');
 Route::get('/requests', [PageController::class, 'requests'])->middleware(['auth'])->name('requests');
 Route::get('/create-request', [PageController::class, 'create_request'])->middleware(['auth'])->name('create-request');
+Route::get('/requests/{id}', [PageController::class, 'created_request'])->middleware(['auth'])->name('created-request');
+Route::get('/requests/{id}/process', [PageController::class, 'request_process'])->middleware(['auth'])->name('process-request');
 
 require __DIR__.'/auth.php';
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [PageController::class, 'items'])->middleware(['auth'])->name('items');
+Route::get('/', [PageController::class, 'items'])->middleware(['auth'])->name('items');

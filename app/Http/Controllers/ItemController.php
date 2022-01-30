@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\ItemHistory;
 use Illuminate\Http\Request;
 use App\Http\Requests\SerialRequest;
+use App\Models\ItemDetail;
+use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
 {
@@ -22,7 +24,25 @@ class ItemController extends Controller
 
     public function all()
     {
-        return Item::all();
+        $items = Item::all();
+        return $items;
+    }
+
+    public function detail_search(Request $request)
+    {
+        $item_details = ItemDetail::query();
+        $item_details->join('items', 'items.id', '=', 'item_details.item_id', 'left');
+        $item_details->groupBy('quantity');
+        // $item_details->distinct();
+        $item_details->where('warehouse_id', $request->warehouse_id);
+        return $item_details->get();
+    }
+
+    public function forRequest(Request $request, $id)
+    {
+        $items = Item::find(1);
+        $items->remaining = ItemDetail::where('quantity','<>',0)->where('item_id', $id)->where('warehouse_id', $request->warehouse_id)->groupBy('quantity')->select(DB::raw('quantity as per_pieces'), DB::raw('SUM(quantity) as total_quantity'), DB::raw('CAST(SUM(quantity/quantity) AS DECIMAL) as max_quantity'))->get();
+        return $items;
     }
 
     /**
@@ -113,6 +133,7 @@ class ItemController extends Controller
             'item_detail_id' => $item_detail->id,
             'user_id' => $request->user_id,
             'warehouse_id' => $request->warehouse_id,
+            'quantity' =>  $request->quantity,
             'stock' => $request->warehouse_id == 1 ? $old_total_quantity_1  : $old_total_quantity_2 ,
             'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2 ,
         ]);

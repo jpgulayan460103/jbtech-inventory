@@ -15,8 +15,12 @@ class CreateRequestItemDetailsTable extends Migration
     {
         Schema::create('request_item_details', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_detail_id')->nullable();
-            $table->foreign('item_detail_id')->references('id')->on('item_details')->onDelete('cascade');
+            $table->unsignedBigInteger('item_id')->nullable();
+            $table->integer('quantity')->nullable();
+            $table->integer('per_piece')->nullable();
+            $table->unsignedBigInteger('request_item_id')->nullable();
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
+            $table->foreign('request_item_id')->references('id')->on('request_items')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });
