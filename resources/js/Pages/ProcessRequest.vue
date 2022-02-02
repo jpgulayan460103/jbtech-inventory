@@ -152,6 +152,7 @@
                 for (let index = 0; index < this.clonedCreatedRequest.items.length; index++) {
                     let item = this.clonedCreatedRequest.items[index];
                     let scannedQuantity = this.getScannedItemQuantity(item.item_id, item.per_piece);
+                    this.clonedCreatedRequest.items[index].fulfilled_quantity = scannedQuantity;
                     if(scannedQuantity != item.requested_quantity){
                         has_unfulfilled = true;
                         unfulfilled = item;
@@ -176,7 +177,8 @@
                     let formData = {
                             user_id: this.user.id,
                             warehouse_id: this.clonedCreatedRequest.warehouse_id,
-                            items: this.scannedItems
+                            items: this.scannedItems,
+                            requestDataItems: this.clonedCreatedRequest.items
                         };
                         axios.post(`/api/request/${this.clonedCreatedRequest.id}/process`,formData)
                         .then(res => {

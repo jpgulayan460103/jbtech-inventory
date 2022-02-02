@@ -14,7 +14,7 @@ class ItemHistoryController extends Controller
      */
     public function index($id)
     {
-        return ItemHistory::with('item','item_detail.warehouse')->where('item_id',$id)->orderBy('warehouse_id')->orderBy('id', 'desc')->paginate(10);
+        return ItemHistory::with('item','item_detail.warehouse','request_item', 'user')->where('item_id',$id)->orderBy('warehouse_id')->orderBy('id', 'desc')->paginate(10);
     }
 
     /**

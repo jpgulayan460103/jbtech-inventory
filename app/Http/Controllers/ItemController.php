@@ -105,9 +105,19 @@ class ItemController extends Controller
      * @param  \App\Models\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Item $item)
+    public function update(Request $request, $id)
     {
-        //
+        $item_exist = Item::where('name', $request->name)->where('category',$request->category)->where('id',"<>",$id)->first();
+        if($item_exist){
+            return response()->json([
+                'message' => "The given data was invalid.",
+                'errors' => [
+                    'name' => ['The item is already added.']
+                ]
+            ], 422);
+        }
+        $item = Item::find($id)->update($request->all());
+        return $item;
     }
 
     /**

@@ -7,8 +7,9 @@
                     :width="400">
             </notifications>
             <div class="col-md-4">
-                <div v-if="formType == 'create'">
-                    <h2>Create Item</h2>
+                <div v-if="formType == 'create' || formType == 'edit_items'">
+                    <h2 v-if="formType == 'create'">Create Item</h2>
+                    <h2 v-else>Update Item</h2>
                     <form id="createItemForm" @submit.prevent="submitForm">
                         <div class="form-group">
                             <label for="category">Category</label>
@@ -65,7 +66,7 @@
 
                         <div class="form-group">
                             <label for="reorder_level">To</label>
-                            <select class="form-control" v-model="addItemFormData.warehouse_id">
+                            <select class="form-control" v-model="addItemFormData.warehouse_id" :disabled="user.account_type != 'admin'">
                                 <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
                             </select>
                         </div>
@@ -123,7 +124,7 @@
                             <td class="text-center ">
                                 <div class="flex space-x-4">
                                     <span class="custom-pointer" @click="selectItem(item, index)">Add</span> |
-                                    <span class="custom-pointer">Edit</span> |
+                                    <span class="custom-pointer" @click="editSelectItem(item, index)">Edit</span> |
                                     <span class="custom-pointer">Delete</span>
                                 </div>
                             </td>
@@ -141,11 +142,11 @@
                 </nav>
             </div>
         </div>
-        <hr>
+        <hr v-if="formType !='edit_items'">
         <br>
 
         <!-- Serial Numbers -->
-        <div class="row">
+        <div class="row" v-if="formType !='edit_items'">
             <div class="col-md-12">
                 <h2>{{ selectedItem.category }} {{ selectedItem.name }} Serial Numbers</h2>
                 <table class="table">
@@ -166,14 +167,6 @@
                             <td>{{ item.remarks }}</td>
                             <td>{{ item.warehouse.name }}</td>
                             <td>{{ item.created_at }}</td>
-                            <!-- <td class="text-center ">
-                                <div class="flex space-x-4">
-                                    <span class="custom-pointer" @click="selectItemDetail(item, index)">Add</span> |
-                                    <span class="custom-pointer">View</span> |
-                                    <span class="custom-pointer">Edit</span> |
-                                    <span class="custom-pointer">Delete</span>
-                                </div>
-                            </td> -->
                         </tr>
                     </tbody>
                 </table>
@@ -188,12 +181,12 @@
                 </nav>
             </div>
         </div>
-        <hr>
+        <hr v-if="formType !='edit_items'">
         <br>
 
 
         <!-- History -->
-        <div class="row">
+        <div class="row" v-if="formType !='edit_items'">
             <div class="col-md-12">
                 <h2>{{ selectedItem.category }} {{ selectedItem.name }} In/Out History</h2>
                 <table class="table">
@@ -207,6 +200,8 @@
                             <th scope="col">Added</th>
                             <th scope="col">Stock</th>
                             <th scope="col">Remaining</th>
+                            <th scope="col">Request Number</th>
+                            <th scope="col">User</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,6 +214,12 @@
                             <td>{{ item.item_detail.created_at }}</td>
                             <td>{{ item.stock }}</td>
                             <td>{{ item.remain }}</td>
+                            <td>
+                                <a :href="`/requests/${item.request_item.id}`" v-if="item.request_item">
+                                    {{ item.request_item ? item.request_item.request_number : "" }}
+                                </a>
+                            </td>
+                            <td>{{ item.user ? item.user.name : "" }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -279,10 +280,12 @@
                     page: 1
                 },
                 itemDetailFilterData: {
-                    page: 1
+                    page: 1,
+                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : ""
                 },
                 itemHistoryFilterData: {
-                    page: 1
+                    page: 1,
+                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : ""
                 }
             }
         },
@@ -311,6 +314,14 @@
                 this.itemHistoryPaginations = res.data.links;
             },
             async submitForm(){
+                if(this.formType == "create"){
+                    this.createItem();
+                }else{
+                    this.updateItem();
+                }
+            },
+
+            async createItem(){
                 this.createItemFormError = {};
                 axios.post('/api/items', this.createItemFormData)
                 .then(res => {
@@ -320,6 +331,36 @@
                         text: `${this.createItemFormError.name} as been added`,
                         type: "success"
                     });
+                    this.createItemFormData.name = "";
+                    this.createItemFormData.item_type = "per_box";
+                    this.createItemFormData.reorder_level = "";
+                    this.getItem();
+                })
+                .catch(err => {
+                    this.createItemFormError = err.response.data.errors;
+                })
+                .then(res => {})
+                ;
+            },
+
+            async updateItem(){
+                this.createItemFormError = {};
+                axios.put(`/api/items/${this.createItemFormData.id}`, this.createItemFormData)
+                .then(res => {
+                    this.$notify({
+                        group: 'foo',
+                        title: `Success`,
+                        text: `${this.createItemFormError.name} as been added`,
+                        type: "success"
+                    });
+                    this.createItemFormData = {
+                        name: "",
+                        category: "",
+                        reorder: 0,
+                        item_type: "per_box",
+                        user_id: this.user.id,
+                    }
+                    this.formType = "create";
                     this.getItem();
                 })
                 .catch(err => {
@@ -356,7 +397,7 @@
                     name: item.name,
                     item_id: item.id,
                     per_piece: item.per_piece,
-                    warehouse_id: this.warehouses[0].id,
+                    warehouse_id: this.user.account_type == 'admin' ? this.warehouses[0].id : this.user.warehouse_id,
                 };
                 if(item.item_type == 'per_piece'){
                     this.addItemFormData.quantity = 1;
@@ -366,6 +407,13 @@
                 this.itemDetailFilterData.page = 1;
                 await this.getItemDetails();
                 await this.getItemHistory();
+            },
+            async editSelectItem(item, index){
+                this.formType = "edit_items";
+                this.selectedItem = item;
+                this.createItemFormData = {
+                    ...item
+                }
             },
             selectItemDetail(item, index){
                 this.selectedItemDetail = item;
@@ -381,6 +429,7 @@
                 this.itemDetailPaginations = [];
             },
             resetForms(){
+                this.formType = "create";
                 this.createItemFormData = {
                     name: "",
                     category: "",

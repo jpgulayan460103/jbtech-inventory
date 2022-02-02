@@ -28,6 +28,7 @@ Route::get('/requests', [PageController::class, 'requests'])->middleware(['auth'
 Route::get('/create-request', [PageController::class, 'create_request'])->middleware(['auth'])->name('create-request');
 Route::get('/requests/{id}', [PageController::class, 'created_request'])->middleware(['auth'])->name('created-request');
 Route::get('/requests/{id}/process', [PageController::class, 'request_process'])->middleware(['auth'])->name('process-request');
+Route::get('/users', [PageController::class, 'users'])->middleware(['auth'])->name('users');
 
 require __DIR__.'/auth.php';
 

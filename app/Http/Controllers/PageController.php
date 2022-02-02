@@ -33,7 +33,7 @@ class PageController extends Controller
         $user = Auth::user();
         return view('created-request', compact('created_request','user'));
     }
-    public function request_process(Request $request, $id)
+    public function users(Request $request, $id)
     {
         $created_request = RequestItem::with('warehouse','items.item')->find($id);
         $user = Auth::user();

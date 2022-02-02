@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\ItemDetail;
 use App\Models\ItemHistory;
 use App\Models\RequestItem;
+use App\Models\RequestItemDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -143,6 +144,12 @@ class RequestItemController extends Controller
                         'quantity' =>  $old_quantity,
                     ]);
                 }
+            }
+
+            foreach ($request->requestDataItems as $item) {
+                $req_item = RequestItemDetail::find($item['id']);
+                $req_item->fulfilled_quantity = $item['fulfilled_quantity'];
+                $req_item->save();
             }
             DB::commit();
         } catch (\Throwable $th) {

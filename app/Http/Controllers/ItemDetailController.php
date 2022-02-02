@@ -15,7 +15,7 @@ class ItemDetailController extends Controller
      */
     public function index($id)
     {
-        return ItemDetail::with('warehouse')->where('item_id',$id)->paginate(10);
+        return ItemDetail::with('warehouse')->where('item_id',$id)->where('quantity','<>',0)->paginate(10);
     }
 
     /**

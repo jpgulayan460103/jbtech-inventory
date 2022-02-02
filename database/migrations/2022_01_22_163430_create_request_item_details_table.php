@@ -21,6 +21,7 @@ class CreateRequestItemDetailsTable extends Migration
             $table->unsignedBigInteger('request_item_id')->nullable();
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
             $table->foreign('request_item_id')->references('id')->on('request_items')->onDelete('cascade');
+            $table->integer('fulfilled_quantity')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

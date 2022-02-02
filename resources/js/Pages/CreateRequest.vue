@@ -157,7 +157,7 @@
                 var has_error = false;
                 this.requestFormData.items.forEach(item => {
                     let index = item.remaining.findIndex(i => i.per_pieces == item.per_piece);
-                    if(item.remaining[index].max_quantity !== item.quantity){
+                    if(item.remaining[index].max_quantity < item.quantity){
                         this.alertError(this.$notify);
                         has_error = true;
                     }

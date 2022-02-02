@@ -19,6 +19,7 @@ class RequestItemDetail extends Model
         'request_item_id',
         'per_piece',
         'quantity',
+        'fulfilled_quantity',
     ];
 
     public function item()

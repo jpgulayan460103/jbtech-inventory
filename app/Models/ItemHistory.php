@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Item;
 use App\Models\ItemDetail;
+use App\Models\RequestItem;
+use App\Models\User;
 class ItemHistory extends Model
 {
     use SoftDeletes;
@@ -32,5 +34,14 @@ class ItemHistory extends Model
     public function item_detail()
     {
         return $this->belongsTo(ItemDetail::class);
+    }
+    
+    public function request_item()
+    {
+        return $this->belongsTo(RequestItem::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

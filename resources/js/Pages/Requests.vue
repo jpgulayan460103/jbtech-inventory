@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h2>Items List</h2>
+        <h2>Request List</h2>
         <table class="table">
             <thead>
                 <tr>

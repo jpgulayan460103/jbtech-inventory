@@ -17,7 +17,22 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'admin',
             'email' => 'admin',
-            'password' => 'admin',
+            'password' => 'admin@123',
+            'account_type' => 'admin',
+        ]);
+        User::create([
+            'name' => 'main warehouse',
+            'email' => 'mwarehouse',
+            'password' => 'mwarehouse@123',
+            'warehouse_id' => 1,
+            'account_type' => 'warehouse_admin',
+        ]);
+        User::create([
+            'name' => 'main warehouse',
+            'email' => 'jbwarehouse',
+            'password' => 'jbwarehouse@123',
+            'warehouse_id' => 2,
+            'account_type' => 'warehouse_admin',
         ]);
     }
 }
