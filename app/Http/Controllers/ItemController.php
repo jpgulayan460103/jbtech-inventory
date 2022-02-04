@@ -148,4 +148,9 @@ class ItemController extends Controller
             'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2 ,
         ]);
     }
+
+    public function categories(Request $request)
+    {
+        return Item::select('category')->distinct()->get();
+    }
 }

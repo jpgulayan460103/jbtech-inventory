@@ -33,18 +33,24 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
+                    @auth
+                        @if(Auth::user()->account_type != 'user')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('items') }}">{{ __('Items') }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('requests') }}">{{ __('Requests') }}</a>
                         </li>
+                        @endif
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('create-request') }}">{{ __('Create Request') }}</a>
                         </li>
+                        @if(Auth::user()->account_type == 'admin')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('create-request') }}">{{ __('Users') }}</a>
+                            <a class="nav-link" href="{{ route('users') }}">{{ __('Users') }}</a>
                         </li>
+                        @endif
+                        @endauth
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -57,11 +63,11 @@
                                 </li>
                             @endif
 
-                            @if (Route::has('register'))
+                            <!-- @if (Route::has('register'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
-                            @endif
+                            @endif -->
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>

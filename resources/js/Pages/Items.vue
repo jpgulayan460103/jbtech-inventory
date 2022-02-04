@@ -13,8 +13,23 @@
                     <form id="createItemForm" @submit.prevent="submitForm">
                         <div class="form-group">
                             <label for="category">Category</label>
-                            <input type="text" class="form-control" v-model="createItemFormData.category" placeholder="Enter Category" required :class="{'is-invalid': (typeof createItemFormError.category != 'undefined' && createItemFormError.category.length != 0)}">
-                            <div class="invalid-feedback">
+
+                            <vue-typeahead-bootstrap
+                                :data="categories"
+                                v-model="createItemFormData.category"
+                                :screen-reader-text-serializer="item => ` `"
+                                :serializer="item => item.category"
+                                placeholder="Enter Category"
+                                :inputClass="(typeof createItemFormError.category != 'undefined' && createItemFormError.category.length != 0) ? 'form-control is-invalid' :''"
+                            >
+                                <template slot="suggestion" slot-scope="{ data }">
+                                    <div>
+                                        <span>{{ data.category }}</span>
+                                    </div>
+                                </template>
+                            </vue-typeahead-bootstrap>
+                            <!-- <input type="text" class="form-control" v-model="createItemFormData.category" placeholder="Enter Category" required :class="{'is-invalid': (typeof createItemFormError.category != 'undefined' && createItemFormError.category.length != 0)}"> -->
+                            <div style="color:red">
                                 {{ createItemFormError.category ? createItemFormError.category[0] : "" }}
                             </div>
                         </div>
@@ -238,10 +253,15 @@
 </template>
 
 <script>
+    import VueTypeaheadBootstrap from 'vue-typeahead-bootstrap';
     export default {
         mounted() {
-            console.log('Component mounted.')
+            // console.log('Component mounted.')
             this.getItem();
+            this.getCategories();
+        },
+        components: {
+            VueTypeaheadBootstrap
         },
         props: ['warehouses','user'],
         data() {
@@ -276,6 +296,7 @@
                 itemPaginations: [],
                 itemDetailPaginations: [],
                 itemHistoryPaginations: [],
+                categories: [],
                 itemFilterData: {
                     page: 1
                 },
@@ -290,6 +311,10 @@
             }
         },
         methods: {
+            async getCategories(){
+                let res = await axios.get('/api/categories');
+                this.categories = res.data;
+            },
             async getItem(){
                 let res = await axios.get('/api/items',{
                     params: this.itemFilterData
@@ -328,7 +353,7 @@
                     this.$notify({
                         group: 'foo',
                         title: `Success`,
-                        text: `${this.createItemFormError.name} as been added`,
+                        text: `${this.createItemFormData.name} as been added`,
                         type: "success"
                     });
                     this.createItemFormData.name = "";
@@ -350,7 +375,7 @@
                     this.$notify({
                         group: 'foo',
                         title: `Success`,
-                        text: `${this.createItemFormError.name} as been added`,
+                        text: `${this.createItemFormData.name} as been updated`,
                         type: "success"
                     });
                     this.createItemFormData = {

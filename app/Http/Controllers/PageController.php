@@ -13,6 +13,9 @@ class PageController extends Controller
     {
         $warehouses = Warehouse::all();
         $user = Auth::user();
+        if($user->account_type == 'user'){
+            return view('create-request', compact('warehouses','user'));
+        }
         return view('items', compact('warehouses','user'));
     }
     public function requests(Request $request)
@@ -33,10 +36,10 @@ class PageController extends Controller
         $user = Auth::user();
         return view('created-request', compact('created_request','user'));
     }
-    public function users(Request $request, $id)
+    public function users(Request $request)
     {
-        $created_request = RequestItem::with('warehouse','items.item')->find($id);
+        $warehouses = Warehouse::all();
         $user = Auth::user();
-        return view('process-request', compact('created_request','user'));
+        return view('users', compact('warehouses','user'));
     }
 }
