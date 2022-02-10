@@ -24,7 +24,23 @@ class Item extends Model
         'reorder_level',
         'is_active',
         'item_type',
+        'allow_delete',
+        'is_archived',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+        self::creating(function ($model) {
+            $model->allow_delete = 1;
+            $model->is_active = 1;
+            $model->is_archived = 0;
+        });
+        self::updating(function($model) {
+
+        });
+    }
+    
 
     public function getItemTypeStringAttribute()
     {

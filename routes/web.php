@@ -29,10 +29,11 @@ Route::get('/create-request', [PageController::class, 'create_request'])->middle
 Route::get('/requests/{id}', [PageController::class, 'created_request'])->middleware(['auth'])->name('created-request');
 Route::get('/requests/{id}/process', [PageController::class, 'request_process'])->middleware(['auth'])->name('process-request');
 Route::get('/users', [PageController::class, 'users'])->middleware(['auth'])->name('users');
+Route::get('/generate/barcode', [PageController::class, 'generateBarcode'])->middleware(['auth'])->name('generate-barcode');
 
 require __DIR__.'/auth.php';
 
 Auth::routes();
 
-Route::get('/home', [PageController::class, 'items'])->middleware(['auth'])->name('items');
-Route::get('/', [PageController::class, 'items'])->middleware(['auth'])->name('items');
+// Route::get('/home', [PageController::class, 'items'])->middleware(['auth'])->name('home');
+Route::get('/', [PageController::class, 'items'])->middleware(['auth'])->name('home');

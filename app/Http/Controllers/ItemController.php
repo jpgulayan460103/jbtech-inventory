@@ -126,9 +126,9 @@ class ItemController extends Controller
      * @param  \App\Models\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Item $item)
+    public function destroy(Item $item, $id)
     {
-        //
+        $item->find($id)->delete();
     }
 
     public function addSerial(SerialRequest $request, $id)
@@ -147,6 +147,8 @@ class ItemController extends Controller
             'stock' => $request->warehouse_id == 1 ? $old_total_quantity_1  : $old_total_quantity_2 ,
             'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2 ,
         ]);
+        $item->allow_delete = 0;
+        $item->save();
     }
 
     public function categories(Request $request)

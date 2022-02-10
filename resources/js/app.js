@@ -10,6 +10,7 @@ import Vue from 'vue'
 import Notifications from 'vue-notification'
 import './components'
 import './../css/app.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
 /**
  * The following block of code may be used to automatically register your

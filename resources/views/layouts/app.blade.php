@@ -34,10 +34,10 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                     @auth
-                        @if(Auth::user()->account_type != 'user')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('items') }}">{{ __('Items') }}</a>
                         </li>
+                        @if(Auth::user()->account_type != 'user')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('requests') }}">{{ __('Requests') }}</a>
                         </li>

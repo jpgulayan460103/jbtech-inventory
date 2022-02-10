@@ -6,7 +6,7 @@
                     :max="3"
                     :width="400">
             </notifications>
-            <div class="col-md-4">
+            <div class="col-md-4" v-if="user.account_type != 'user'">
                 <div v-if="formType == 'create' || formType == 'edit_items'">
                     <h2 v-if="formType == 'create'">Create Item</h2>
                     <h2 v-else>Update Item</h2>
@@ -115,33 +115,42 @@
                 </div>
             </div>
             <div class="col-md-8">
-                <h2>Items List</h2>
+                <h2  class="mb-6">Items List</h2>
                 <table class="table">
                     <thead>
                         <tr>
+                            <th scope="col">ID</th>
                             <th scope="col">Type</th>
                             <th scope="col">Category</th>
                             <th scope="col">Item Name</th>
                             <th scope="col">Reorder Level</th>
                             <th scope="col">Main Warehouse Qty</th>
                             <th scope="col">JBtech Warehouse Qty</th>
-                            <th scope="col" class="text-center ">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in items" :key="item.id" :class="{'table-secondary': (selectedItem.id == item.id)}">
+                            <td>{{ item.id }}</td>
                             <td>{{ item.item_type_string }}</td>
                             <td>{{ item.category }}</td>
                             <td>{{ item.name }}</td>
                             <td>{{ item.reorder_level }}</td>
                             <td class="text-center">{{ item.total_quantity_1 }}</td>
                             <td class="text-center">{{ item.total_quantity_2 }}</td>
-                            <td class="text-center ">
-                                <div class="flex space-x-4">
-                                    <span class="custom-pointer" @click="selectItem(item, index)">Add</span> |
-                                    <span class="custom-pointer" @click="editSelectItem(item, index)">Edit</span> |
-                                    <span class="custom-pointer">Delete</span>
-                                </div>
+                            <td class="text-center" v-if="user.account_type != 'user'">
+                                <span class="custom-pointer" @click="selectItem(item, index)" title="Add/View Stock"><i class="bi bi-plus-square"></i></span>
+                            </td>
+                            <td class="text-center" v-if="user.account_type != 'user'">
+                                <span class="custom-pointer" @click="editSelectItem(item, index)" title="Edit Item Details"><i class="bi bi-pencil-square"></i></span>
+                            </td>
+                            <td class="text-center" v-if="user.account_type != 'user'">
+                                <span class="custom-pointer" v-if="item.allow_delete == 1" @click="deleteSelectedItem(item)" title="Delete Item"><i class="bi bi-trash"></i></span>
+                            </td>
+                            <td class="text-center" v-if="user.account_type != 'user'">
+                                <span class="custom-pointer" title="Generate Barcode" @click="generateBarcode(item)" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-upc"></i></span>
+                            </td>
+                            <td class="text-center" v-if="user.account_type != 'user'">
+                                <span class="custom-pointer" v-if="item.total_quantity_1 == 0 && item.total_quantity_2 == 0 && item.allow_delete == 0" title="Archive"><i class="bi bi-file-earmark-zip"></i></span>
                             </td>
                         </tr>
                     </tbody>
@@ -249,6 +258,52 @@
                 </nav>
             </div>
         </div>
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Barcode Generator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="generateBarcode" @submit.prevent="generateBarcodePhp">
+                        <span><b>Barcode Definition:</b></span><br>
+                        <span>Item ID: <b>{{ barcodeForm.id  }} ({{ barcodeForm.id }})</b></span><br>
+                        <span>Category: <b>{{ barcodeForm.category }} ({{ barcodeForm.ca }})</b></span><br>
+                        <span>Current Year: <b>{{ barcodeForm.year }} ({{ barcodeForm.ye }})</b></span><br>
+                        <div class="form-group">
+                            <label for="prefix">Barcode Prefix</label>
+                            <input readonly type="text" class="form-control" aria-describedby="emailHelp" v-model="barcodeForm.prefix" placeholder="Enter Barcode Prefix" required>
+                        </div>
+                        <!-- 
+                        <div class="form-group">
+                            <label for="padding">Leading Zeros</label>
+                            <input type="number" min="1" class="form-control" aria-describedby="emailHelp" v-model="barcodeForm.padding" placeholder="Enter Leading Zeros" required>
+                        </div> -->
+                        <div class="form-group">
+                            <label for="from">Starting Number</label>
+                            <input type="number" min="1" class="form-control" aria-describedby="emailHelp" v-model="barcodeForm.from" placeholder="Enter Starting Number" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="to">Ending Number</label>
+                            <input type="number" min="1" class="form-control" aria-describedby="emailHelp" v-model="barcodeForm.to" placeholder="Enter Ending Number" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="to">Sample Barcode</label>
+                            <input type="text" readonly class="form-control" aria-describedby="emailHelp" v-model="sampleBarcode" placeholder="Enter Ending Number" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="generateBarcode" class="btn btn-primary">Generate</button>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -307,7 +362,13 @@
                 itemHistoryFilterData: {
                     page: 1,
                     warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : ""
-                }
+                },
+                barcodeForm: {
+                    prefix: "",
+                    padding: 3,
+                    from: 1,
+                    to: 100,
+                },
             }
         },
         methods: {
@@ -440,6 +501,16 @@
                     ...item
                 }
             },
+            async deleteSelectedItem(item, index){
+                axios.delete(`/api/items/${item.id}`)
+                .then(res => {
+                    this.getItem();
+                    this.getCategories();
+                    this.resetForms();
+                    this.selectedItem = {};
+                })
+                .catch(err => {})
+            },
             selectItemDetail(item, index){
                 this.selectedItemDetail = item;
             },
@@ -489,6 +560,40 @@
                 this.itemDetailFilterData.page = label;
                 this.getItemDetails();
             },
+            generateBarcode(item){
+                const event = new Date();
+                let year = event.getFullYear();
+                let ye = event.getFullYear().toString().substr(2);
+                let ca = item.category
+                    .split(' ')
+                    .map(word => word[0].toUpperCase())
+                    .join('');
+                this.barcodeForm = {
+                    ...item,
+                    prefix: `${item.id}${ca}${ye}`,
+                    padding: 4,
+                    from: 1,
+                    to: 100,
+                    year,
+                    ye,
+                    ca
+                }
+            },
+            generateBarcodePhp(){
+                window.open(`/generate/barcode?prefix=${this.barcodeForm.prefix}&from=${this.barcodeForm.from}&to=${this.barcodeForm.to}&padding=${this.barcodeForm.padding}`,
+                    'newwindow',
+                    'width=960,height=1080');
+                return false;
+            }
+        },
+        computed: {
+            sampleBarcode(){
+                if(this.barcodeForm.prefix == ""){
+                    return "";
+                }else{
+                    return `${this.barcodeForm.prefix}`+ `${this.barcodeForm.from}`.padStart(this.barcodeForm.padding, "0");
+                }
+            }
         }
     }
 </script>
