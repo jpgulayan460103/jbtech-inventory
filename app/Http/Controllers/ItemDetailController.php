@@ -13,9 +13,24 @@ class ItemDetailController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index(Request $request, $id)
     {
-        return ItemDetail::with('warehouse')->where('item_id',$id)->where('quantity','<>',0)->paginate(10);
+        $items = ItemDetail::with('warehouse','item')->where('quantity','<>',0);
+        if($id != 'all'){
+            $items->where('item_id',$id);
+        }
+        if($request->warehouse_id){
+            $items->where('warehouse_id', $request->warehouse_id);
+        }
+        if($request->search){
+            $search = $request->search;
+            $items->join('items', 'items.id', '=', 'item_details.item_id')
+            ->where(function ($query) use ($search) {
+                $query->where('item_details.serial_number', 'like', "%".$search."%")
+                      ->orWhere('items.name', 'like', "%".$search."%");
+            });
+        }
+        return $items->paginate(10);
     }
 
     /**

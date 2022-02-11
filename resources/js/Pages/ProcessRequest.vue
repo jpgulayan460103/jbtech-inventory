@@ -160,19 +160,20 @@
                     }
                 }
                 if(has_unfulfilled){
-                    if(confirm(`The quantity of ${unfulfilled.item.name} is not enough to fulfill the requested quantity. Are you sure you want to continue?`)){
-                        let formData = {
-                            user_id: this.user.id,
-                            warehouse_id: this.clonedCreatedRequest.warehouse_id,
-                            items: this.scannedItems
-                        };
-                        axios.post(`/api/request/${this.clonedCreatedRequest.id}/process`,formData)
-                        .then(res => {
-                            window.location = `/requests/${this.clonedCreatedRequest.id}`;
-                        })
-                        .catch(res => {})
-                        .then(res => {})
-                    };
+                    alert(`The quantity of ${unfulfilled.item.name} is not enough to fulfill the requested quantity`)
+                    // if(confirm()){
+                    //     let formData = {
+                    //         user_id: this.user.id,
+                    //         warehouse_id: this.clonedCreatedRequest.warehouse_id,
+                    //         items: this.scannedItems
+                    //     };
+                    //     axios.post(`/api/request/${this.clonedCreatedRequest.id}/process`,formData)
+                    //     .then(res => {
+                    //         window.location = `/requests/${this.clonedCreatedRequest.id}`;
+                    //     })
+                    //     .catch(res => {})
+                    //     .then(res => {})
+                    // };
                 }else{
                     let formData = {
                             user_id: this.user.id,

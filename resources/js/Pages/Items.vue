@@ -79,6 +79,16 @@
                             </div>
                         </div>
 
+
+                        <div class="form-group">
+                            <label for="reorder_level">Receive Type</label>
+                            <select class="form-control" v-model="addItemFormData.receive_type" required>
+                                <option value="">Select Receive Type</option>
+                                <option value="in">NEW ITEM</option>
+                                <option value="transfer">STOCK TRANSFER</option>
+                            </select>
+                        </div>
+
                         <div class="form-group">
                             <label for="reorder_level">To</label>
                             <select class="form-control" v-model="addItemFormData.warehouse_id" :disabled="user.account_type != 'admin'">
@@ -86,7 +96,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" v-if="addItemFormData.receive_type == 'in'">
                             <label for="serial_number">Quantity {{ selectedItem.item_type_string }}</label>
                             <input type="number" min="1" class="form-control" v-model="addItemFormData.quantity" placeholder="Enter Quantity" required :disabled="selectedItem.item_type == 'per_piece'">
                             <div class="invalid-feedback">
@@ -116,6 +126,24 @@
             </div>
             <div class="col-md-8">
                 <h2  class="mb-6">Items List</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            Search:
+                            <input class="form-control form-control-sm" v-model="itemFilterData.search" type="text" placeholder="Type here...">
+                        </div>
+                        <div class="col-md-2">
+                            View Items:
+                            <select class="form-control form-control-sm" v-model="itemFilterData.view_status">
+                                <option value="default">All</option>
+                                <option value="archived">Archived</option>
+                                <option value="reorder">Reorder Level</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            &nbsp;<br>
+                            <button class="btn btn-primary  btn-sm" @click="getItem">Search</button>
+                        </div>
+                    </div>
                 <table class="table">
                     <thead>
                         <tr>
@@ -126,6 +154,7 @@
                             <th scope="col">Reorder Level</th>
                             <th scope="col">Main Warehouse Qty</th>
                             <th scope="col">JBtech Warehouse Qty</th>
+                            <th scope="col">Total Qty</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,20 +166,22 @@
                             <td>{{ item.reorder_level }}</td>
                             <td class="text-center">{{ item.total_quantity_1 }}</td>
                             <td class="text-center">{{ item.total_quantity_2 }}</td>
-                            <td class="text-center" v-if="user.account_type != 'user'">
+                            <td class="text-center">{{ item.total_quantity }}</td>
+                            <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
                                 <span class="custom-pointer" @click="selectItem(item, index)" title="Add/View Stock"><i class="bi bi-plus-square"></i></span>
                             </td>
-                            <td class="text-center" v-if="user.account_type != 'user'">
+                            <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
                                 <span class="custom-pointer" @click="editSelectItem(item, index)" title="Edit Item Details"><i class="bi bi-pencil-square"></i></span>
                             </td>
-                            <td class="text-center" v-if="user.account_type != 'user'">
+                            <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
                                 <span class="custom-pointer" v-if="item.allow_delete == 1" @click="deleteSelectedItem(item)" title="Delete Item"><i class="bi bi-trash"></i></span>
                             </td>
-                            <td class="text-center" v-if="user.account_type != 'user'">
+                            <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
                                 <span class="custom-pointer" title="Generate Barcode" @click="generateBarcode(item)" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-upc"></i></span>
                             </td>
                             <td class="text-center" v-if="user.account_type != 'user'">
-                                <span class="custom-pointer" v-if="item.total_quantity_1 == 0 && item.total_quantity_2 == 0 && item.allow_delete == 0" title="Archive"><i class="bi bi-file-earmark-zip"></i></span>
+                                <span class="custom-pointer" v-if="item.total_quantity_1 == 0 && item.total_quantity_2 == 0 && item.allow_delete == 0 && item.is_archived === 0" title="Archive" @click="archiveItem(item, 1)"><i class="bi bi-file-earmark-zip"></i></span>
+                                <span class="custom-pointer" v-if="item.is_archived === 1" title="Unarchive" @click="archiveItem(item, 0)"><i class="bi bi-arrow-counterclockwise"></i></span>
                             </td>
                         </tr>
                     </tbody>
@@ -173,9 +204,27 @@
         <div class="row" v-if="formType !='edit_items'">
             <div class="col-md-12">
                 <h2>{{ selectedItem.category }} {{ selectedItem.name }} Serial Numbers</h2>
+                <div class="row">
+                    <div class="col-md-2">
+                        Search:
+                        <input class="form-control form-control-sm" v-model="itemDetailFilterData.search" type="text" placeholder="Type here...">
+                    </div>
+                    <div class="col-md-2">
+                        Warehouse:
+                        <select class="form-control form-control-sm" v-model="itemDetailFilterData.warehouse_id" :disabled="user.account_type != 'admin'">
+                            <option value="">All Warehouse</option>
+                            <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        &nbsp;<br>
+                        <button class="btn btn-primary  btn-sm" @click="getItemDetails">Search</button>
+                    </div>
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
+                            <th scope="col">Item Name</th>
                             <th scope="col">Serial Number</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
@@ -186,6 +235,9 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in itemDetails" :key="item.id" :class="{'table-secondary': (selectedItemDetail.id == item.id)}">
+                            <td>
+                                <span :title="item.item.category">{{ item.item.name }}</span>
+                            </td>
                             <td>{{ item.serial_number }}</td>
                             <td>{{ item.quantity }}</td>
                             <td>{{ item.remarks }}</td>
@@ -212,11 +264,39 @@
         <!-- History -->
         <div class="row" v-if="formType !='edit_items'">
             <div class="col-md-12">
-                <h2>{{ selectedItem.category }} {{ selectedItem.name }} In/Out History</h2>
+                <h2>{{ selectedItem.category }} {{ selectedItem.name }} Item History</h2>
+
+                <div class="row">
+                    <div class="col-md-2">
+                        Search:
+                        <input class="form-control form-control-sm" v-model="itemHistoryFilterData.search" type="text" placeholder="Type here...">
+                    </div>
+                    <div class="col-md-2">
+                        Warehouse:
+                        <select class="form-control form-control-sm" v-model="itemHistoryFilterData.warehouse_id" :disabled="user.account_type != 'admin'">
+                            <option value="">All Warehouse</option>
+                            <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        History Type:
+                        <select class="form-control form-control-sm" v-model="itemHistoryFilterData.history_type">
+                            <option value="">All History Type</option>
+                            <option value="in">IN</option>
+                            <option value="out">OUT</option>
+                            <option value="transfer">STOCK TRANSFER</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        &nbsp;<br>
+                        <button class="btn btn-primary  btn-sm" @click="getItemHistory">Search</button>
+                    </div>
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
                             <th scope="col">In/Out</th>
+                            <th scope="col">Item Name</th>
                             <th scope="col">Serial Number</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
@@ -231,10 +311,16 @@
                     <tbody>
                         <tr v-for="(item, index) in itemHistories" :key="index" :class="{'table-secondary': (selectedItemHistory.id == item.id)}">
                             <td>{{ item.history_type }}</td>
+                            <td>
+                                <span :title="item.item.category">{{ item.item.name }}</span>
+                            </td>
                             <td>{{ item.item_detail.serial_number }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>{{ item.item_detail.remarks }}</td>
-                            <td>{{ item.item_detail.warehouse.name }}</td>
+                            <td>
+                                <span v-if="item.history_type =='out'">{{ item.request_item.remarks }}</span>
+                                <span v-else>{{ item.item_detail.remarks }}</span>
+                            </td>
+                            <td>{{ item.warehouse.name }}</td>
                             <td>{{ item.item_detail.created_at }}</td>
                             <td>{{ item.stock }}</td>
                             <td>{{ item.remain }}</td>
@@ -309,11 +395,15 @@
 
 <script>
     import VueTypeaheadBootstrap from 'vue-typeahead-bootstrap';
+    import isEmpty from 'lodash/isEmpty';
+    import cloneDeep from 'lodash/cloneDeep';
     export default {
-        mounted() {
+        async mounted() {
             // console.log('Component mounted.')
-            this.getItem();
-            this.getCategories();
+            await this.getItem();
+            await this.getCategories();
+            await this.getItemDetails();
+            await this.getItemHistory();
         },
         components: {
             VueTypeaheadBootstrap
@@ -338,6 +428,7 @@
                     item_id: null,
                     remarks: "",
                     user_id: this.user.id,
+                    receive_type: "",
                 },
                 addItemDetailFormErrors:{
                 },
@@ -353,15 +444,21 @@
                 itemHistoryPaginations: [],
                 categories: [],
                 itemFilterData: {
-                    page: 1
+                    page: 1,
+                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    search: "",
+                    view_status: "default",
                 },
                 itemDetailFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : ""
+                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    search: ""
                 },
                 itemHistoryFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : ""
+                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    search: "",
+                    history_type: "",
                 },
                 barcodeForm: {
                     prefix: "",
@@ -384,7 +481,7 @@
                 this.itemPaginations = res.data.links;
             },
             async getItemDetails(){
-                let id = this.selectedItem.id;
+                let id = isEmpty(this.selectedItem) ? "all" : this.selectedItem.id;
                 let res = await axios.get(`/api/items/${id}/details`,{
                     params: this.itemDetailFilterData
                 });
@@ -392,7 +489,7 @@
                 this.itemDetailPaginations = res.data.links;
             },
             async getItemHistory(){
-                let id = this.selectedItem.id;
+                let id = isEmpty(this.selectedItem) ? "all" : this.selectedItem.id;
                 let res = await axios.get(`/api/items/${id}/history`,{
                     params: this.itemHistoryFilterData
                 });
@@ -517,12 +614,14 @@
             selectItemHistory(item, index){
                 this.selectedItemHistory = item;
             },
-            closeAddItemForm(){
+            async closeAddItemForm(){
                 this.formType = "create";
                 this.resetForms();
                 this.selectedItem = {};
                 this.itemDetails = [];
                 this.itemDetailPaginations = [];
+                await this.getItemDetails();
+                await this.getItemHistory();
             },
             resetForms(){
                 this.formType = "create";
@@ -540,6 +639,7 @@
                     item_id: null,
                     remarks: "",
                     user_id: this.user.id,
+                    receive_type: "",
                 };
             },
             navigateItemPages(label){
@@ -559,6 +659,15 @@
                 }
                 this.itemDetailFilterData.page = label;
                 this.getItemDetails();
+            },
+            navigateItemHistoryPages(label){
+                if(label == "Next &raquo;"){
+                    label = this.itemHistoryFilterData.page + 1;
+                }else if(label == "&laquo; Previous"){
+                    label = this.itemHistoryFilterData.page - 1;
+                }
+                this.itemHistoryFilterData.page = label;
+                this.getItemHistory();
             },
             generateBarcode(item){
                 const event = new Date();
@@ -584,6 +693,26 @@
                     'newwindow',
                     'width=960,height=1080');
                 return false;
+            },
+            async archiveItem(item, value){
+                item = cloneDeep(item);
+                item.is_archived = value;
+                axios.put(`/api/items/${item.id}`, item)
+                .then(async res => {
+                    this.$notify({
+                        group: 'foo',
+                        title: `Success`,
+                        text: `${item.name} as been archived`,
+                        type: "success"
+                    });
+                    await this.getItem();
+                    await this.getCategories();
+                    await this.getItemDetails();
+                    await this.getItemHistory();
+                })
+                .catch(err => { })
+                .then(res => {})
+                ;
             }
         },
         computed: {

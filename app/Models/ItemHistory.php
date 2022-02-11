@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\ItemDetail;
 use App\Models\RequestItem;
 use App\Models\User;
+use App\Models\Warehouse;
 class ItemHistory extends Model
 {
     use SoftDeletes;
@@ -43,5 +44,9 @@ class ItemHistory extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }

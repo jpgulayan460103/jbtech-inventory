@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ItemHistory;
+use App\Models\ItemDetail;
 use Illuminate\Http\Request;
 
 class ItemHistoryController extends Controller
@@ -12,9 +13,29 @@ class ItemHistoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index(Request $request, $id)
     {
-        return ItemHistory::with('item','item_detail.warehouse','request_item', 'user')->where('item_id',$id)->orderBy('warehouse_id')->orderBy('id', 'desc')->paginate(10);
+        $items = ItemHistory::with('item','item_detail.warehouse','request_item.warehouse', 'user', 'warehouse')->orderBy('id', 'desc');
+        if($id != 'all'){
+            $items->where('item_id',$id);
+        }
+        if($request->warehouse_id){
+            $items->where('warehouse_id', $request->warehouse_id);
+        }
+        if($request->history_type){
+            $items->where('history_type', $request->history_type);
+        }
+        if($request->search){
+            $search = $request->search;
+            $item_details_ids = ItemDetail::join('items', 'items.id', '=', 'item_details.item_id')
+            ->where(function ($query) use ($search) {
+                $query->where('item_details.serial_number', 'like', "%".$search."%")
+                      ->orWhere('items.name', 'like', "%".$search."%");
+            })
+            ->select('item_details.id', 'item_details.serial_number', 'items.name')->pluck('id');
+            $items->whereIn('item_detail_id', $item_details_ids);
+        }
+        return $items->paginate(10);
     }
 
     /**

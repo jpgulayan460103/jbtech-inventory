@@ -60,11 +60,19 @@
             <div class="col-sm-12">
                 <table style="width:100%">
                     <tr>
-                        <td style="width: 50%">&nbsp;</td>
+                        <td style="width: 50%">PREPARED BY</td>
                         <td style="width: 50%">RECEIVED BY</td>
                     </tr> 
                     <tr>
-                        <td style="width: 50%;"><br>&nbsp;</td>
+                        <td style="width: 50%;"><br>_____________________________________</td>
+                        <td style="width: 50%;"><br>_____________________________________</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 50%">VALIDATED BY</td>
+                        <td style="width: 50%">DELIEVERED BY</td>
+                    </tr> 
+                    <tr>
+                        <td style="width: 50%;"><br>_____________________________________</td>
                         <td style="width: 50%;"><br>_____________________________________</td>
                     </tr>   
                 </table>                

@@ -24,9 +24,20 @@ class SerialRequest extends FormRequest
     public function rules()
     {
         return [
-            'serial_number' => 'required|unique:item_details,serial_number',
+            'serial_number' => [
+                'required',
+                (request()->has('receive_type') && request('receive_type') == "in") ? 'unique:item_details': 'exists:item_details',
+            ],
             'quantity' => 'required|min:0|numeric',
             'warehouse_id' => 'required',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'serial_number.unique' => 'The serial number is already in the database.',
+            'serial_number.exists' => 'The serial number does not exist in the database.'
         ];
     }
 }

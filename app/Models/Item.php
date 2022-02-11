@@ -17,6 +17,7 @@ class Item extends Model
         'item_type_string',
         'total_quantity_1',
         'total_quantity_2',
+        'total_quantity',
     );
     protected $fillable = [
         'name',
@@ -59,6 +60,10 @@ class Item extends Model
     public function getTotalQuantity2Attribute()
     {
         return $this->details()->where('warehouse_id', 2)->sum('quantity');
+    }
+    public function getTotalQuantityAttribute()
+    {
+        return $this->details()->sum('quantity');
     }
 
 
