@@ -91,7 +91,8 @@
 
                         <div class="form-group">
                             <label for="reorder_level">To</label>
-                            <select class="form-control" v-model="addItemFormData.warehouse_id" :disabled="user.account_type != 'admin'">
+                            <select class="form-control" v-model="addItemFormData.warehouse_id" :disabled="user.account_type != 'admin'" required>
+                                <option value="">Select Warehouse</option>
                                 <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
                             </select>
                         </div>
@@ -230,7 +231,7 @@
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
                             <th scope="col">Added</th>
-                            <!-- <th scope="col" class="text-center ">Actions</th> -->
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -243,6 +244,9 @@
                             <td>{{ item.remarks }}</td>
                             <td>{{ item.warehouse.name }}</td>
                             <td>{{ item.created_at }}</td>
+                            <td sty>
+                                <span class="custom-pointer" v-if="user.account_type == 'admin'" @click="deleteSerialNumber(item)" title="Delete Item" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="bi bi-trash"></i></span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -285,6 +289,7 @@
                             <option value="in">IN</option>
                             <option value="out">OUT</option>
                             <option value="transfer">STOCK TRANSFER</option>
+                            <option value="deleted">DELETED</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -302,8 +307,8 @@
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
                             <th scope="col">Added</th>
-                            <th scope="col">Stock</th>
-                            <th scope="col">Remaining</th>
+                            <th scope="col">Previous Qty</th>
+                            <th scope="col">Remaining Qty</th>
                             <th scope="col">Request Number</th>
                             <th scope="col">User</th>
                         </tr>
@@ -318,6 +323,7 @@
                             <td>{{ item.quantity }}</td>
                             <td>
                                 <span v-if="item.history_type =='out'">{{ item.request_item.remarks }}</span>
+                                <span v-else-if="item.history_type =='deleted'">{{ item.deleted_remarks }}</span>
                                 <span v-else>{{ item.item_detail.remarks }}</span>
                             </td>
                             <td>{{ item.warehouse.name }}</td>
@@ -343,6 +349,31 @@
                     </ul>
                 </nav>
             </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Delete {{ selectedSerial.serial_number }} Serial Number?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteSerialForm" @submit.prevent="deleteSerialPhp">
+                        <div class="form-group">
+                            <label for="to">Reason</label>
+                            <textarea class="form-control" v-model="selectedSerial.deleted_remarks" placeholder="Add Reason" required>
+                            </textarea>
+                        </div>
+                    </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeDeleteModal" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="deleteSerialForm" class="btn btn-danger">Confirm Delete</button>
+            </div>
+            </div>
+        </div>
         </div>
 
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -424,14 +455,14 @@
                 addItemFormData: {
                     name: "",
                     serial_number: "",
-                    quantity: 1,
+                    quantity: 0,
                     item_id: null,
                     remarks: "",
                     user_id: this.user.id,
                     receive_type: "",
                 },
-                addItemDetailFormErrors:{
-                },
+                addItemDetailFormErrors:{},
+                selectedSerial:{},
                 items: [],
                 itemDetails: [],
                 itemHistories: [],
@@ -580,7 +611,8 @@
                     name: item.name,
                     item_id: item.id,
                     per_piece: item.per_piece,
-                    warehouse_id: this.user.account_type == 'admin' ? this.warehouses[0].id : this.user.warehouse_id,
+                    quantity: 0,
+                    warehouse_id: this.user.account_type == 'admin' ? "" : this.user.warehouse_id,
                 };
                 if(item.item_type == 'per_piece'){
                     this.addItemFormData.quantity = 1;
@@ -635,7 +667,7 @@
                 this.addItemFormData = {
                     name: "",
                     serial_number: "",
-                    quantity: 1,
+                    quantity: 0,
                     item_id: null,
                     remarks: "",
                     user_id: this.user.id,
@@ -713,6 +745,29 @@
                 .catch(err => { })
                 .then(res => {})
                 ;
+            },
+            async deleteSerialNumber(item){
+                this.selectedSerial = cloneDeep(item);
+            },
+            async deleteSerialPhp(){
+                document.getElementById('closeDeleteModal').click();
+                this.selectedSerial.user_id = this.user.id;
+                axios.put(`/api/items/${this.selectedSerial.item_id}/details/${this.selectedSerial.id}`, this.selectedSerial)
+                .then(async res => {
+                    this.$notify({
+                        group: 'foo',
+                        title: `Success`,
+                        text: `${item.serial_number} as been deleted`,
+                        type: "success"
+                    });
+                })
+                .catch(err => { })
+                .then(res => {})
+                ;
+                await this.getItem();
+                await this.getCategories();
+                await this.getItemDetails();
+                await this.getItemHistory();
             }
         },
         computed: {

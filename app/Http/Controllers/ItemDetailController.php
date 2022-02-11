@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ItemDetail;
 use App\Models\Item;
+use App\Models\ItemHistory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ItemDetailController extends Controller
 {
@@ -94,8 +96,33 @@ class ItemDetailController extends Controller
      * @param  \App\Models\ItemDetail  $itemDetail
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ItemDetail $itemDetail)
+    public function destroy(Request $request, $item_id, $id)
     {
-        //
+        try {
+            DB::beginTransaction();
+            $item_detail = ItemDetail::find($id);
+            $item_detail_old = $item_detail;
+            $item_detail_old_quantity = $item_detail->quantity;
+            $item_detail->quantity = 0;
+            $item_detail->save();
+            $item = Item::find($item_id);
+            $old_total_quantity_1 = $item->total_quantity_1;
+            $old_total_quantity_2 = $item->total_quantity_2;
+            ItemHistory::create([
+                'history_type' => "deleted",
+                'item_id' => $item->id,
+                'item_detail_id' => $item_detail->id,
+                'user_id' => $request->user_id,
+                'warehouse_id' => $item_detail_old->warehouse_id,
+                'quantity' =>  $item_detail_old_quantity,
+                'stock' => $item_detail_old->warehouse_id == 1 ? $old_total_quantity_1 + $item_detail_old_quantity  : $old_total_quantity_2 + $item_detail_old_quantity ,
+                'remain' => $item_detail_old->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2,
+                'deleted_remarks' => $request->deleted_remarks
+            ]);
+            $item_detail->delete();
+            DB::commit();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

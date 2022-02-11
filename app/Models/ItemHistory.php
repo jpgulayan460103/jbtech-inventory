@@ -25,6 +25,7 @@ class ItemHistory extends Model
         'remain',
         'warehouse_id',
         'request_item_id',
+        'deleted_remarks',
     ];
 
     public function item()
@@ -34,7 +35,7 @@ class ItemHistory extends Model
 
     public function item_detail()
     {
-        return $this->belongsTo(ItemDetail::class);
+        return $this->belongsTo(ItemDetail::class)->withTrashed();
     }
     
     public function request_item()

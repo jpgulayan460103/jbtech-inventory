@@ -30,6 +30,7 @@ Route::prefix('items')->group(function () {
     Route::get('/', 'App\Http\Controllers\ItemController@index')->name('api.item.index');
     Route::get('/{id}/request', 'App\Http\Controllers\ItemController@forRequest')->name('api.item.request');
     Route::get('/{id}/details', 'App\Http\Controllers\ItemDetailController@index')->name('api.item.details');
+    Route::put('/{itemid}/details/{id}', 'App\Http\Controllers\ItemDetailController@destroy')->name('api.item.details');
     Route::get('/{id}/history', 'App\Http\Controllers\ItemHistoryController@index')->name('api.item.details');
     Route::post('/', 'App\Http\Controllers\ItemController@store')->name('api.item.store');
     Route::put('/{id}', 'App\Http\Controllers\ItemController@update')->name('api.item.update');

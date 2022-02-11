@@ -27,6 +27,7 @@ class CreateItemHistoriesTable extends Migration
             $table->foreign('item_detail_id')->references('id')->on('item_details')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
+            $table->string('deleted_remarks')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

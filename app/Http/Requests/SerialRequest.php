@@ -26,7 +26,7 @@ class SerialRequest extends FormRequest
         return [
             'serial_number' => [
                 'required',
-                (request()->has('receive_type') && request('receive_type') == "in") ? 'unique:item_details': 'exists:item_details',
+                (request()->has('receive_type') && request('receive_type') == "in") ? 'unique:item_details,serial_number,NULL,id,deleted_at,NULL': 'exists:item_details,serial_number,deleted_at,NULL',
             ],
             'quantity' => 'required|min:0|numeric',
             'warehouse_id' => 'required',
