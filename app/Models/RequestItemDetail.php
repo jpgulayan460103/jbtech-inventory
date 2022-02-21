@@ -9,6 +9,11 @@ use App\Models\Item;
 class RequestItemDetail extends Model
 {
     use HasFactory;
+    protected $dates = ['stock_month'];
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d h:i:s A',
+        'stock_month' => 'datetime:F Y',
+    ];
 
     protected $appends = array(
         'requested_quantity',
@@ -20,6 +25,7 @@ class RequestItemDetail extends Model
         'per_piece',
         'quantity',
         'fulfilled_quantity',
+        'stock_month',
     ];
 
     public function item()

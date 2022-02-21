@@ -32,7 +32,6 @@ class SerialRequest extends FormRequest
             'warehouse_id' => 'required',
         ];
     }
-
     public function messages()
     {
         return [

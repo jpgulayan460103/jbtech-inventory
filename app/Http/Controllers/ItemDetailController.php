@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ItemDetail;
 use App\Models\Item;
 use App\Models\ItemHistory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,12 +18,16 @@ class ItemDetailController extends Controller
      */
     public function index(Request $request, $id)
     {
+        DB::enableQueryLog();
         $items = ItemDetail::with('warehouse','item')->where('quantity','<>',0);
         if($id != 'all'){
             $items->where('item_id',$id);
         }
         if($request->warehouse_id){
             $items->where('warehouse_id', $request->warehouse_id);
+        }
+        if($request->stock_month){
+            $items->where('stock_month', Carbon::parse($request->stock_month)->toDateString());
         }
         if($request->search){
             $search = $request->search;
@@ -32,6 +37,8 @@ class ItemDetailController extends Controller
                       ->orWhere('items.name', 'like', "%".$search."%");
             });
         }
+        $items->paginate(10);
+        // return DB::getQueryLog();
         return $items->paginate(10);
     }
 
@@ -124,5 +131,11 @@ class ItemDetailController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+    }
+
+    public function stockMonths(Request $request, $id)
+    {
+        $items = ItemDetail::select('stock_month')->orderBy('stock_month')->where('quantity','<>',0)->distinct()->get('stock_month');
+        return $items;
     }
 }

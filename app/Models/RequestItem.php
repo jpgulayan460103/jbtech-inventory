@@ -21,10 +21,11 @@ class RequestItem extends Model
         'warehouse_id',
         'status',
         'remarks',
-    ];
-    protected $appends = array(
+        'request_type',
         'request_number',
-    );
+        'received_id',
+        'received_date',
+    ];
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d h:i:s A',
@@ -33,6 +34,12 @@ class RequestItem extends Model
     {
         return $this->hasMany(RequestItemDetail::class);
     }
+
+    public function serials()
+    {
+        return $this->hasMany(ItemHistory::class);
+    }
+
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
@@ -46,8 +53,4 @@ class RequestItem extends Model
         return $this->belongsTo(User::class, 'processor_id');
     }
 
-    public function getRequestNumberAttribute()
-    {
-        return Carbon::parse($this->created_at)->format("Y-").str_pad($this->id,4,"0",STR_PAD_LEFT);
-    }
 }

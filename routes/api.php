@@ -26,12 +26,14 @@ Route::get('/requests', 'App\Http\Controllers\RequestItemController@index')->nam
 Route::get('/categories', 'App\Http\Controllers\ItemController@categories')->name('api.request.index');
 Route::get('/requests/items/scan', 'App\Http\Controllers\RequestItemController@scan')->name('api.request.scan');
 Route::post('/request/{id}/process', 'App\Http\Controllers\RequestItemController@process')->name('api.request.process');
+Route::post('/request/{id}/receive', 'App\Http\Controllers\RequestItemController@receive')->name('api.request.receive');
 Route::prefix('items')->group(function () {
     Route::get('/', 'App\Http\Controllers\ItemController@index')->name('api.item.index');
     Route::get('/{id}/request', 'App\Http\Controllers\ItemController@forRequest')->name('api.item.request');
     Route::get('/{id}/details', 'App\Http\Controllers\ItemDetailController@index')->name('api.item.details');
     Route::put('/{itemid}/details/{id}', 'App\Http\Controllers\ItemDetailController@destroy')->name('api.item.details');
     Route::get('/{id}/history', 'App\Http\Controllers\ItemHistoryController@index')->name('api.item.details');
+    Route::get('/{id}/stock-months', 'App\Http\Controllers\ItemDetailController@stockMonths')->name('api.item.details.stockMonths');
     Route::post('/', 'App\Http\Controllers\ItemController@store')->name('api.item.store');
     Route::put('/{id}', 'App\Http\Controllers\ItemController@update')->name('api.item.update');
     Route::post('/{id}/serial', 'App\Http\Controllers\ItemController@addSerial')->name('api.item.add.serial');

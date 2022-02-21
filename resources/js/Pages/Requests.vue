@@ -1,6 +1,14 @@
 <template>
     <div class="container">
         <h2>Request List</h2>
+        <div class="row" v-if="user.account_type == 'warehouse_admin'">
+            <div class="col-md-2">
+                <select class="form-control form-control-sm" @change="getRequest" v-model="requestFilterData.show">
+                    <option value="requested">User Requested</option>
+                    <option value="created">Created Request</option>
+                </select>
+            </div>
+        </div>
         <table class="table">
             <thead>
                 <tr>
@@ -42,13 +50,15 @@
         mounted() {
             this.getRequest();
         },
-        props: ['warehouses'],
+        props: ['warehouses','user'],
         data() {
             return {
                 requests: [],
                 requestPaginations: {},
                 requestFilterData: {
-                    page: 1
+                    page: 1,
+                    user_id: this.user.id,
+                    show: "requested"
                 },
                 selectedItem: {
                     id: null

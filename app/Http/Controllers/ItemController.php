@@ -56,7 +56,27 @@ class ItemController extends Controller
     public function forRequest(Request $request, $id)
     {
         $items = Item::find($id);
-        $items->remaining = ItemDetail::where('quantity','<>',0)->where('item_id', $id)->where('warehouse_id', $request->warehouse_id)->groupBy('quantity')->select(DB::raw('quantity as per_pieces'), DB::raw('SUM(quantity) as total_quantity'), DB::raw('CAST(SUM(quantity/quantity) AS DECIMAL) as max_quantity'))->get();
+        $items->remaining = ItemDetail::where('quantity','<>',0)
+            ->where('item_id', $id)
+            ->where('warehouse_id', $request->warehouse_id)
+            ->groupBy('stock_month')
+            ->select(
+                'stock_month'
+            )
+            ->get();
+        foreach ($items->remaining as $key => $remaining) {
+            $remaining->quantities = ItemDetail::where('quantity','<>',0)
+            ->where('item_id', $id)
+            ->where('warehouse_id', $request->warehouse_id)
+            ->groupBy('quantity')
+            ->where('stock_month', $remaining->stock_month)
+            ->select(
+                DB::raw('quantity as per_pieces'),
+                DB::raw('SUM(quantity) as total_quantity'),
+                DB::raw('CAST(SUM(quantity/quantity) AS DECIMAL) as max_quantity')
+                )
+            ->get();
+        }
         return $items;
     }
 
@@ -177,9 +197,10 @@ class ItemController extends Controller
             'item_detail_id' => $item_detail->id,
             'user_id' => $request->user_id,
             'warehouse_id' => $request->warehouse_id,
-            'quantity' =>  $request->receive_type == 'in' ? $request->quantity : $item_history->quantity,
+            'quantity' =>  $request->quantity,
             'stock' => $request->warehouse_id == 1 ? $old_total_quantity_1  : $old_total_quantity_2 ,
             'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1  : $item->total_quantity_2 ,
+            'quantity' =>  $request->receive_type == 'in' ? $request->quantity : $item_history->quantity,
         ]);
         $item->allow_delete = 0;
         $item->save();

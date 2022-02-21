@@ -21,6 +21,7 @@ class CreateItemDetailsTable extends Migration
             $table->integer('quantity')->nullable();
             $table->timestamps();
             $table->string('remarks')->nullable();
+            $table->dateTime('stock_month')->nullable();
             $table->softDeletes();
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
             $table->foreign('warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');

@@ -85,7 +85,7 @@
                             <select class="form-control" v-model="addItemFormData.receive_type" required>
                                 <option value="">Select Receive Type</option>
                                 <option value="in">NEW ITEM</option>
-                                <option value="transfer">STOCK TRANSFER</option>
+                                <option value="rewarehouse">REWAREHOUSE</option>
                             </select>
                         </div>
 
@@ -107,6 +107,13 @@
                         <div class="form-group">
                             <label for="remarks">Remarks</label>
                             <input type="text" class="form-control" v-model="addItemFormData.remarks" placeholder="Enter Remarks" required>
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                        </div>
+                        <div class="form-group" v-if="addItemFormData.receive_type == 'in'">
+                            <label for="stock_month">Stock Month</label>
+                            <input type="month" class="form-control" v-model="addItemFormData.stock_month" placeholder="Enter Stock Month" required>
                             <div class="invalid-feedback">
                                 Please choose a username.
                             </div>
@@ -168,8 +175,11 @@
                             <td class="text-center">{{ item.total_quantity_1 }}</td>
                             <td class="text-center">{{ item.total_quantity_2 }}</td>
                             <td class="text-center">{{ item.total_quantity }}</td>
-                            <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
-                                <span class="custom-pointer" @click="selectItem(item, index)" title="Add/View Stock"><i class="bi bi-plus-square"></i></span>
+                            <td class="text-center" v-if="item.is_archived === 0">
+                                <span class="custom-pointer" @click="selectItem(item, index)" title="Add/View Stock">
+                                    <i class="bi bi-plus-square" v-if="user.account_type != 'user'"></i>
+                                    <i class="bi bi-eye" v-else></i>
+                                </span>
                             </td>
                             <td class="text-center" v-if="user.account_type != 'user' && item.is_archived === 0">
                                 <span class="custom-pointer" @click="editSelectItem(item, index)" title="Edit Item Details"><i class="bi bi-pencil-square"></i></span>
@@ -212,9 +222,16 @@
                     </div>
                     <div class="col-md-2">
                         Warehouse:
-                        <select class="form-control form-control-sm" v-model="itemDetailFilterData.warehouse_id" :disabled="user.account_type != 'admin'">
+                        <select class="form-control form-control-sm" v-model="itemDetailFilterData.warehouse_id">
                             <option value="">All Warehouse</option>
                             <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        Stock Month:
+                        <select class="form-control form-control-sm" v-model="itemDetailFilterData.stock_month">
+                            <option value="">All Months</option>
+                            <option :value="stock_month.stock_month" v-for="(stock_month, index) in stockMonths" :key="index">{{ stock_month.stock_month }}</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -227,6 +244,7 @@
                         <tr>
                             <th scope="col">Item Name</th>
                             <th scope="col">Serial Number</th>
+                            <th scope="col">Stock Month</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
@@ -240,6 +258,7 @@
                                 <span :title="item.item.category">{{ item.item.name }}</span>
                             </td>
                             <td>{{ item.serial_number }}</td>
+                            <td>{{ item.stock_month }}</td>
                             <td>{{ item.quantity }}</td>
                             <td>{{ item.remarks }}</td>
                             <td>{{ item.warehouse.name }}</td>
@@ -277,7 +296,7 @@
                     </div>
                     <div class="col-md-2">
                         Warehouse:
-                        <select class="form-control form-control-sm" v-model="itemHistoryFilterData.warehouse_id" :disabled="user.account_type != 'admin'">
+                        <select class="form-control form-control-sm" v-model="itemHistoryFilterData.warehouse_id">
                             <option value="">All Warehouse</option>
                             <option :value="warehouse.id" v-for="warehouse in warehouses" :key="warehouse.id">{{ warehouse.name }}</option>
                         </select>
@@ -288,7 +307,7 @@
                             <option value="">All History Type</option>
                             <option value="in">IN</option>
                             <option value="out">OUT</option>
-                            <option value="transfer">STOCK TRANSFER</option>
+                            <option value="rewarehouse">REWAREHOUSE</option>
                             <option value="deleted">DELETED</option>
                         </select>
                     </div>
@@ -303,6 +322,7 @@
                             <th scope="col">In/Out</th>
                             <th scope="col">Item Name</th>
                             <th scope="col">Serial Number</th>
+                            <th scope="col">Stock Month</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
@@ -319,7 +339,12 @@
                             <td>
                                 <span :title="item.item.category">{{ item.item.name }}</span>
                             </td>
-                            <td>{{ item.item_detail.serial_number }}</td>
+                            <td>
+                                 <span :title="item.item_detail.serial_number">{{ item.item_detail.serial_number }}</span>
+                            </td>
+                            <td>
+                                 <span :title="item.item_detail.stock_month">{{ item.item_detail.stock_month }}</span>
+                            </td>
                             <td>{{ item.quantity }}</td>
                             <td>
                                 <span v-if="item.history_type =='out'">{{ item.request_item.remarks }}</span>
@@ -435,6 +460,7 @@
             await this.getCategories();
             await this.getItemDetails();
             await this.getItemHistory();
+            await this.getStockMonths();
         },
         components: {
             VueTypeaheadBootstrap
@@ -474,6 +500,7 @@
                 itemDetailPaginations: [],
                 itemHistoryPaginations: [],
                 categories: [],
+                stockMonths: [],
                 itemFilterData: {
                     page: 1,
                     warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
@@ -483,7 +510,8 @@
                 itemDetailFilterData: {
                     page: 1,
                     warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
-                    search: ""
+                    search: "",
+                    stock_month: ""
                 },
                 itemHistoryFilterData: {
                     page: 1,
@@ -526,6 +554,11 @@
                 });
                 this.itemHistories = res.data.data;
                 this.itemHistoryPaginations = res.data.links;
+            },
+            async getStockMonths(){
+                let id = isEmpty(this.selectedItem) ? "all" : this.selectedItem.id;
+                let res = await axios.get(`/api/items/${id}/stock-months`);
+                this.stockMonths = res.data;
             },
             async submitForm(){
                 if(this.formType == "create"){
@@ -671,7 +704,6 @@
                     item_id: null,
                     remarks: "",
                     user_id: this.user.id,
-                    receive_type: "",
                 };
             },
             navigateItemPages(label){

@@ -17,6 +17,7 @@
                         <th scope="col">Item Name</th>
                         <th scope="col">Category</th>
                         <th scope="col">Per Piece</th>
+                        <th scope="col">Per Piece</th>
                         <th scope="col">No. of Box Requested</th>
                         <th scope="col">Requested Qty</th>
                         <th scope="col">Fulfilled Qty</th>
@@ -27,6 +28,7 @@
                         <td>{{ item.item ? item.item.name : "" }}</td>
                         <td>{{ item.item ? item.item.category : "" }}</td>
                         <td>{{ item.item ? item.per_piece : "" }}</td>
+                        <td>{{ item.item ? item.stock_month : "" }}</td>
                         <td>{{ item.item ? item.quantity : "" }}</td>
                         <td>{{ item.requested_quantity }}</td>
                         <td>{{ getScannedItemQuantity(item.item_id, item.per_piece) }}</td>
@@ -61,6 +63,7 @@
                             <td>
                                 <span>{{ scannedItem.serial_number }}</span><br>
                                 <span>remarks:{{ scannedItem.remarks }}</span><br>
+                                <span>stock: {{ scannedItem.stock_month }}</span><br>
                             </td>
                             <td>{{ scannedItem.quantity }}</td>
                             <td>
@@ -106,6 +109,7 @@
                 })
                 .then(res => {
                     let item_detail = res.data;
+                    console.log(item_detail);
                     let existed = this.scannedItems.filter(i => i.serial_number == item_detail.serial_number);
                     if(_isEmpty(existed)){
                         let on_items = this.clonedCreatedRequest.items.filter(i => i.item_id == item_detail.item_id && item_detail.quantity == i.per_piece);
@@ -116,7 +120,12 @@
                             console.log(item_detail.quantity, on_items[0].per_piece);
                             if(newQuantity <= limitQuantity){
                                 if(item_detail.quantity == on_items[0].per_piece){
-                                    this.scannedItems.push(item_detail);
+                                    if(item_detail.stock_month == on_items[0].stock_month){
+                                        this.scannedItems.push(item_detail);
+                                    }else{
+                                        console.log('lahi ug stock month');
+                                    }
+                                    // this.scannedItems.push(item_detail);
                                 }else{
                                     console.log('lahi ug per piece');
                                 }

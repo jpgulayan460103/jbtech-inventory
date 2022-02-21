@@ -37,11 +37,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('items') }}">{{ __('Items') }}</a>
                         </li>
-                        @if(Auth::user()->account_type != 'user')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('requests') }}">{{ __('Requests') }}</a>
                         </li>
-                        @endif
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('create-request') }}">{{ __('Create Request') }}</a>
                         </li>

@@ -29,7 +29,8 @@ class PageController extends Controller
     }
     public function created_request(Request $request, $id)
     {
-        $created_request = RequestItem::with('warehouse','items.item','requester','processor')->find($id);
+        $created_request = RequestItem::with('warehouse','items.item','serials.item', 'serials.item_detail','requester','processor')->find($id);
+        // return $created_request;
         $user = Auth::user();
         return view('created-request', compact('created_request','user'));
     }
@@ -54,7 +55,7 @@ class PageController extends Controller
         for ($i=$from; $i <= $to; $i++) { 
             $padded = str_pad($i,$padding,"0",STR_PAD_LEFT);
             $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-            echo '<div style="float:left;margin:2px;padding:10px 10px 2px 10px;width:max-content;border: 1px solid black;text-align:center"><img src="data:image/png;base64,' . base64_encode($generator->getBarcode($prefix.$padded, $generator::TYPE_CODE_128)) . '"><br><span>'.$prefix.$padded.'</span></div>';
+            echo '<div style="float:left;margin:2px;padding:8px 5px 2px 5px;width:max-content;border: 1px solid rgb(0,0,0,0.3);text-align:center"><img style="width:150px" src="data:image/png;base64,' . base64_encode($generator->getBarcode($prefix.$padded, $generator::TYPE_CODE_128)) . '"><br><span>'.$prefix.$padded.'</span></div>';
         }
         
     }

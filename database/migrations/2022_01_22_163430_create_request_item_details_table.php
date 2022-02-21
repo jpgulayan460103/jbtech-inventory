@@ -22,6 +22,7 @@ class CreateRequestItemDetailsTable extends Migration
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
             $table->foreign('request_item_id')->references('id')->on('request_items')->onDelete('cascade');
             $table->integer('fulfilled_quantity')->nullable();
+            $table->date('stock_month')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

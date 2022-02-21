@@ -7,6 +7,6 @@
 
     @section('content')
     <h1 style="text-align: center">REQUESTS</h1>
-    <requests-created :created-request="{{ $created_request }}"></requests-created>
+    <requests-created :created-request="{{ $created_request }}" :user="{{ $user }}"></requests-created>
     @endsection
 </x-app-layout>

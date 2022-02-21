@@ -7,6 +7,6 @@
 
     @section('content')
     <h1 style="text-align: center">REQUESTS</h1>
-    <requests-index :warehouses="{{ $warehouses }}"></requests-index>
+    <requests-index :warehouses="{{ $warehouses }}" :user="{{ $user }}"></requests-index>
     @endsection
 </x-app-layout>

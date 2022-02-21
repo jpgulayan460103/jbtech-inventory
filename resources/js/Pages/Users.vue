@@ -38,7 +38,7 @@
                             </div>
                         </div>
 
-                    <div class="form-group" v-if="formData.account_type !='admin'">
+                    <div class="form-group" v-if="formData.account_type =='warehouse_admin'">
                         <label for="reorder_level">To</label>
                         <select class="form-control" v-model="formData.warehouse_id">
                             <option value="">Select Warehouse</option>

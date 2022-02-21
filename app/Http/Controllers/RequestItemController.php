@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateRequestItem;
 use App\Models\Item;
 use App\Models\ItemDetail;
 use App\Models\ItemHistory;
 use App\Models\RequestItem;
 use App\Models\RequestItemDetail;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,14 +20,27 @@ class RequestItemController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $request_item = RequestItem::with(
             'warehouse',
             'requester',
             'processor',
-        )->paginate(20);
-        return $request_item;
+        );
+        $user = User::find($request->user_id);
+        if($user && $user->account_type == 'user'){
+            $request_item->where('requester_id', $user->id);
+        }
+        if($user && $user->account_type == 'warehouse_admin'){
+            if($request->show && $request->show == 'requested'){
+                $request_item->where('warehouse_id', $user->warehouse_id);
+                $request_item->where('requester_id', '<>', $user->id );
+            }else{
+                $request_item->where('requester_id', $user->id);
+            }
+        }
+        $request_item->orderBy('id', 'desc');
+        return $request_item->paginate(20);
     }
 
     /**
@@ -43,13 +59,16 @@ class RequestItemController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateRequestItem $request)
     {
         DB::beginTransaction();
         try {
             $request_item = RequestItem::create($request->all());
             $items = $request->items;
             $request_item->items()->createMany($items);
+            $request_item->request_number = Carbon::parse(Carbon::now())->format("Y-").str_pad($request_item->id,4,"0",STR_PAD_LEFT);;
+            $request_item->status = "pending";
+            $request_item->save();
             DB::commit();
             return $request_item;
         } catch (\Throwable $th) {
@@ -152,6 +171,59 @@ class RequestItemController extends Controller
                 $req_item->save();
             }
             DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+    }
+
+    public function receive(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $request_item = RequestItem::with('warehouse','items.item','serials.item', 'serials.item_detail','requester','processor')->find($id);
+            $request_item->status = "received";
+            $request_item->save();
+            // return $request_item;
+            $serials = $request_item->serials;
+            foreach ($serials as $history_item) {
+                $data = [
+                    'quantity' => $history_item->quantity,
+                    'warehouse_id' => $request_item->requester->warehouse_id,
+                ];
+                $item = Item::find($history_item->item->id);
+                $old_total_quantity_1 = $item->total_quantity_1;
+                $old_total_quantity_2 = $item->total_quantity_2;
+                $receiver = ItemHistory::create([
+                    'history_type' => 'stock_transfer',
+                    'item_id' => $history_item->item->id,
+                    'item_detail_id' => $history_item->item_detail->id,
+                    'user_id' => $request->user_id,
+                    'warehouse_id' => $request->warehouse_id,
+                    'stock' => $request->warehouse_id == 1 ? $old_total_quantity_1 : $old_total_quantity_2,
+                    'remain' => $request->warehouse_id == 1 ? $item->total_quantity_1 + $history_item->quantity  : $item->total_quantity_2 + $history_item->quantity ,
+                    'request_item_id' => $id,
+                    'quantity' =>  $history_item->quantity,
+                ]);
+
+                // $sender = ItemHistory::create([
+                //     'history_type' => 'stock_transfer_send',
+                //     'item_id' => $history_item->item->id,
+                //     'item_detail_id' => $history_item->item_detail->id,
+                //     'user_id' => $request_item->processor_id,
+                //     'warehouse_id' => $request_item->warehouse_id,
+                //     'stock' => $request_item->warehouse_id == 1 ? $old_total_quantity_1 + $history_item->quantity : $old_total_quantity_2 + $history_item->quantity,
+                //     'remain' => $request_item->warehouse_id == 1 ? $item->total_quantity_1 : $item->total_quantity_2,
+                //     'request_item_id' => $id,
+                //     'quantity' =>  $history_item->quantity,
+                // ]);
+                // return [
+                //     $receiver,
+                //     $sender,
+                // ];
+                $history_item->item_detail()->update($data);
+            }
+            DB::commit();
+            return $request_item;
         } catch (\Throwable $th) {
             //throw $th;
         }
