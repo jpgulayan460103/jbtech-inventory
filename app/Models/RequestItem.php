@@ -28,7 +28,7 @@ class RequestItem extends Model
     ];
 
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d h:i:s A',
+        // 'created_at' => 'datetime:Y-m-d h:i:s A',
     ];
     public function items()
     {
@@ -51,6 +51,13 @@ class RequestItem extends Model
     public function processor()
     {
         return $this->belongsTo(User::class, 'processor_id');
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
     }
 
 }

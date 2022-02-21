@@ -13,9 +13,9 @@ class ItemDetail extends Model
 {
     use SoftDeletes;
     use HasFactory;
-    protected $dates = ['deleted_at','stock_month'];
+    protected $dates = ['deleted_at','stock_month','created_at'];
     protected $casts = [
-        'created_at' => 'datetime:Y-m-d h:i:s A',
+        // 'created_at' => 'datetime:Y-m-d h:i:s A',
         'stock_month' => 'datetime:F Y',
     ];
     protected $fillable = [
@@ -47,5 +47,12 @@ class ItemDetail extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
     }
 }

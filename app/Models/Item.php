@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use App\Models\ItemDetail;
+use Carbon\Carbon;
 
 class Item extends Model
 {
@@ -66,5 +67,11 @@ class Item extends Model
         return $this->details()->sum('quantity');
     }
 
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
+    }
 
 }
