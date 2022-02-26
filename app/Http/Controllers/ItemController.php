@@ -34,6 +34,8 @@ class ItemController extends Controller
         }else{
             $items->where('is_archived', 0);
         }
+        $items->orderBy('category');
+        $items->orderBy('name');
         return $items->paginate(10);
         return DB::getQueryLog();
     }

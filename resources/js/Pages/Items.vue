@@ -285,7 +285,7 @@
 
 
         <!-- History -->
-        <div class="row" v-if="formType !='edit_items'">
+        <div class="row" v-if="formType !='edit_items' && user.account_type !='user'">
             <div class="col-md-12">
                 <h2>{{ selectedItem.category }} {{ selectedItem.name }} Item History</h2>
 

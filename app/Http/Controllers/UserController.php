@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        return User::with('warehouse')->where('account_type','<>','admin')->get();
+        return User::with('warehouse')->get();
     }
 
     public function store(CreateUserRequest $request){
