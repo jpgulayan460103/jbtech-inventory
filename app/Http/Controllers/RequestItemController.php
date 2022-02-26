@@ -39,6 +39,16 @@ class RequestItemController extends Controller
                 $request_item->where('requester_id', $user->id);
             }
         }
+        if($request->search && trim($request->search) != ""){
+            // $request_item->where('request_number', 'like', "%".$request->search."%");
+            $request_item->where(function ($query) use ($request) {
+                $query->where('request_number', 'like', "%".$request->search."%")
+                      ->orWhere('customer_name', 'like', "%".$request->search."%");
+            });
+        }
+        if($request->status && trim($request->status) != ""){
+            $request_item->where('status', $request->status);
+        }
         $request_item->orderBy('id', 'desc');
         return $request_item->paginate(20);
     }
@@ -106,9 +116,9 @@ class RequestItemController extends Controller
      * @param  \App\Models\RequestItem  $requestItem
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, RequestItem $requestItem)
+    public function update(Request $request, $id)
     {
-        //
+        RequestItem::find($id)->update($request->all());
     }
 
     /**

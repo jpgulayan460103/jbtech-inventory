@@ -30,6 +30,7 @@ Route::get('/requests/{id}', [PageController::class, 'created_request'])->middle
 Route::get('/requests/{id}/process', [PageController::class, 'request_process'])->middleware(['auth'])->name('process-request');
 Route::get('/users', [PageController::class, 'users'])->middleware(['auth'])->name('users');
 Route::get('/generate/barcode', [PageController::class, 'generateBarcode'])->middleware(['auth'])->name('generate-barcode');
+Route::get('/reports', [PageController::class, 'reports'])->middleware(['auth'])->name('reports');
 
 require __DIR__.'/auth.php';
 

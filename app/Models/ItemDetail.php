@@ -16,7 +16,7 @@ class ItemDetail extends Model
     protected $dates = ['deleted_at','stock_month','created_at'];
     protected $casts = [
         // 'created_at' => 'datetime:Y-m-d h:i:s A',
-        'stock_month' => 'datetime:F Y',
+        // 'stock_month' => 'datetime:F Y',
     ];
     protected $fillable = [
         'item_id',
@@ -54,5 +54,11 @@ class ItemDetail extends Model
         return Carbon::createFromTimestamp(strtotime($value))
         ->timezone(config('app.timezone'))
         ->format('Y-m-d h:i:s A');
+    }
+    public function getStockMonthAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('F Y');
     }
 }

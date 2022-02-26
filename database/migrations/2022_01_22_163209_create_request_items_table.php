@@ -23,6 +23,7 @@ class CreateRequestItemsTable extends Migration
             $table->string('request_type')->nullable();
             $table->string('request_number')->nullable();
             $table->text('remarks')->nullable();
+            $table->text('reject_remarks')->nullable();
             $table->unsignedBigInteger('received_id')->nullable();
             $table->dateTime('received_date')->nullable();
             $table->timestamps();

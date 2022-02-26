@@ -1,11 +1,36 @@
 <template>
     <div class="container">
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Reject Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rejectForm" @submit.prevent="submitRejectForm">
+                        <div class="form-group">
+                            <label for="prefix">Reason</label>
+                            <input type="text" class="form-control" aria-describedby="emailHelp" v-model="rejectFormData.reject_remarks" placeholder="Enter reason for rejection" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="rejectForm" class="btn btn-primary">Submit</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-md-12">
                 <table style="width: 100%;">
                     <tr>
                         <td>Request number: <b>{{clonedCreatedRequest.request_number}}</b>
                             <a v-if="clonedCreatedRequest.status == 'pending' && user.account_type != 'user' && user.warehouse_id ==  clonedCreatedRequest.warehouse_id" :href="`/requests/${clonedCreatedRequest.id}/process`" type="button" class="btn btn-primary btn-sm">Process</a>
+                            <button v-if="clonedCreatedRequest.status == 'pending' && user.account_type != 'user' && user.warehouse_id ==  clonedCreatedRequest.warehouse_id" type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">Reject</button>
                         </td>
                         <td>
                             Reqest Type: <b>{{clonedCreatedRequest.request_type}}</b>
@@ -20,10 +45,14 @@
                         <td>Requested By: <b>{{clonedCreatedRequest.requester ? clonedCreatedRequest.requester.name : ""}}</b></td>
                     </tr>
                     <tr>
-                        <td>Remarks: <b>{{clonedCreatedRequest.remarks}}</b></td>
+                        <td>Requester Remarks: <b>{{clonedCreatedRequest.remarks}}</b></td>
                         <td>
                             Status: <b>
                                 <span  v-if="clonedCreatedRequest.status == 'processed' || clonedCreatedRequest.status == 'received'">Processed by {{ clonedCreatedRequest.processor.name }}</span>
+                                <span  v-else-if="clonedCreatedRequest.status == 'rejected'">
+                                    Rejected on {{ clonedCreatedRequest.updated_at }} <br>
+                                    {{ clonedCreatedRequest.reject_remarks }}
+                                </span>
                                 <span  v-else>Pending</span>
                             </b>
                         </td>
@@ -109,14 +138,19 @@
 
 <script>
     import _cloneDeep from 'lodash/cloneDeep'
+import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/js/Components/Button.vue';
     export default {
+  components: { Button },
         mounted() {
             this.clonedCreatedRequest = _cloneDeep(this.createdRequest);
         },
         props: ['createdRequest','user'],
         data() {
             return {
-                clonedCreatedRequest: {}
+                clonedCreatedRequest: {},
+                rejectFormData: {
+                    reject_remarks: "",
+                }
             }
         },
         methods: {
@@ -124,10 +158,21 @@
                 window.print()
             },
             receiveItems(){
-            axios.post(`/api/request/${this.createdRequest.id}/receive`, {
-                user_id: this.user.id,
-                warehouse_id: this.user.warehouse_id
-            })
+                axios.post(`/api/request/${this.createdRequest.id}/receive`, {
+                    user_id: this.user.id,
+                    warehouse_id: this.user.warehouse_id
+                })
+                .then(res => {
+
+                })
+                .catch(err => {})
+                .then(res => {})
+            },
+            submitRejectForm() {
+                axios.put(`/api/request/${this.createdRequest.id}`, {
+                    status: 'rejected',
+                    reject_remarks: this.rejectFormData.reject_remarks,
+                })
                 .then(res => {
 
                 })

@@ -8,6 +8,7 @@ use App\Models\ItemHistory;
 use Illuminate\Http\Request;
 use App\Http\Requests\SerialRequest;
 use App\Models\ItemDetail;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ItemController extends Controller
@@ -69,12 +70,12 @@ class ItemController extends Controller
             ->where('item_id', $id)
             ->where('warehouse_id', $request->warehouse_id)
             ->groupBy('quantity')
-            ->where('stock_month', $remaining->stock_month)
+            ->where('stock_month', Carbon::parse($remaining->stock_month)->timezone(config('app.timezone'))->toDateString())
             ->select(
                 DB::raw('quantity as per_pieces'),
                 DB::raw('SUM(quantity) as total_quantity'),
-                DB::raw('CAST(SUM(quantity/quantity) AS DECIMAL) as max_quantity')
-                )
+                DB::raw('CAST(SUM(quantity/quantity) AS DECIMAL) as max_quantity'),
+            )
             ->get();
         }
         return $items;

@@ -73,5 +73,10 @@ class Item extends Model
         ->timezone(config('app.timezone'))
         ->format('Y-m-d h:i:s A');
     }
+    
+    public function barcodes()
+    {
+        return $this->hasMany(Barcode::class);
+    }
 
 }

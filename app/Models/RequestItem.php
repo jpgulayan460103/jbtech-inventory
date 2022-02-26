@@ -25,6 +25,7 @@ class RequestItem extends Model
         'request_number',
         'received_id',
         'received_date',
+        'reject_remarks',
     ];
 
     protected $casts = [
@@ -54,6 +55,18 @@ class RequestItem extends Model
     }
 
     public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
+    }
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
+    }
+    public function getReceivedDateAttribute($value)
     {
         return Carbon::createFromTimestamp(strtotime($value))
         ->timezone(config('app.timezone'))

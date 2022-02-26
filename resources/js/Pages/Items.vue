@@ -106,7 +106,7 @@
                         </div>
                         <div class="form-group">
                             <label for="remarks">Remarks</label>
-                            <input type="text" class="form-control" v-model="addItemFormData.remarks" placeholder="Enter Remarks" required>
+                            <input type="text" class="form-control" v-model="addItemFormData.remarks" placeholder="Enter Remarks">
                             <div class="invalid-feedback">
                                 Please choose a username.
                             </div>
@@ -411,7 +411,7 @@
                 <div class="modal-body">
                     <form id="generateBarcode" @submit.prevent="generateBarcodePhp">
                         <span><b>Barcode Definition:</b></span><br>
-                        <span>Item ID: <b>{{ barcodeForm.id  }} ({{ barcodeForm.id }})</b></span><br>
+                        <span>Item ID: <b>{{ barcodeForm.item_id  }} ({{ barcodeForm.item_id }})</b></span><br>
                         <span>Category: <b>{{ barcodeForm.category }} ({{ barcodeForm.ca }})</b></span><br>
                         <span>Current Year: <b>{{ barcodeForm.year }} ({{ barcodeForm.ye }})</b></span><br>
                         <div class="form-group">
@@ -438,6 +438,36 @@
                             <input type="text" readonly class="form-control" aria-describedby="emailHelp" v-model="sampleBarcode" placeholder="Enter Ending Number" required>
                         </div>
                     </form>
+
+                    <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Prefix</th>
+                            <th scope="col">Starting</th>
+                            <th scope="col">Ending</th>
+                            <th scope="col">Generated On</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(barcode, index) in barcodes" :key="barcode.id">
+                            <td>{{ barcode.barcode_prefix }}</td>
+                            <td>{{ barcode.start_from }}</td>
+                            <td>{{ barcode.end_to }}</td>
+                            <td>{{ barcode.created_at }}</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" @click="showGeneratedBarcodes({
+                                    prefix: barcode.barcode_prefix,
+                                    from: barcode.start_from,
+                                    to: barcode.end_to,
+                                    padding: barcode.padding,
+                                })">
+                                    Print
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -503,19 +533,19 @@
                 stockMonths: [],
                 itemFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     view_status: "default",
                 },
                 itemDetailFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     stock_month: ""
                 },
                 itemHistoryFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type != 'admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     history_type: "",
                 },
@@ -525,6 +555,7 @@
                     from: 1,
                     to: 100,
                 },
+                barcodes: []
             }
         },
         methods: {
@@ -620,9 +651,6 @@
                 this.addItemDetailFormErrors = {};
                 axios.post(`/api/items/${this.addItemFormData.item_id}/serial`, this.addItemFormData)
                 .then(async res => {
-                    await this.getItem();
-                    await this.getItemDetails();
-                    await this.getItemHistory();
                     this.$notify({
                         group: 'foo',
                         title: `${this.addItemFormData.name}`,
@@ -630,6 +658,9 @@
                         type: "success"
                     });
                     this.addItemFormData.serial_number = "";
+                    await this.getItem();
+                    await this.getItemDetails();
+                    await this.getItemHistory();
                 })
                 .catch(err => {
                     this.addItemDetailFormErrors = err.response.data.errors;
@@ -733,6 +764,23 @@
                 this.itemHistoryFilterData.page = label;
                 this.getItemHistory();
             },
+
+            getGeneratedBarcodes(){
+                axios.get(`/api/items/${this.barcodeForm.item_id}/barcodes`)
+                .then(async res => {
+                    this.barcodes = res.data;
+                    if(!isEmpty(this.barcodes)){
+                        this.barcodeForm = {
+                            ...this.barcodeForm,
+                            from: parseInt(this.barcodes[0].end_to) + 1,
+                            to: parseInt(this.barcodes[0].end_to) + 100,
+                        }
+                    }
+                })
+                .catch(err => { })
+                .then(res => {})
+                ;
+            },
             generateBarcode(item){
                 const event = new Date();
                 let year = event.getFullYear();
@@ -743,6 +791,7 @@
                     .join('');
                 this.barcodeForm = {
                     ...item,
+                    item_id: item.id,
                     prefix: `${item.id}${ca}${ye}`,
                     padding: 4,
                     from: 1,
@@ -751,12 +800,23 @@
                     ye,
                     ca
                 }
+                this.getGeneratedBarcodes();
             },
             generateBarcodePhp(){
-                window.open(`/generate/barcode?prefix=${this.barcodeForm.prefix}&from=${this.barcodeForm.from}&to=${this.barcodeForm.to}&padding=${this.barcodeForm.padding}`,
-                    'newwindow',
-                    'width=960,height=1080');
-                return false;
+                axios.post(`/api/items/${this.barcodeForm.item_id}/barcodes`, this.barcodeForm)
+                .then(async res => {
+                    this.getGeneratedBarcodes();
+                    this.showGeneratedBarcodes(this.barcodeForm);
+                })
+                .catch(err => { })
+                .then(res => {})
+                ;
+            },
+            showGeneratedBarcodes(barcodeForm){
+                window.open(`/generate/barcode?prefix=${barcodeForm.prefix}&from=${barcodeForm.from}&to=${barcodeForm.to}&padding=${barcodeForm.padding}`,
+                        'newwindow',
+                        'width=960,height=1080');
+                    return false;
             },
             async archiveItem(item, value){
                 item = cloneDeep(item);

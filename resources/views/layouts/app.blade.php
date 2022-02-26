@@ -43,6 +43,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('create-request') }}">{{ __('Create Request') }}</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('reports') }}">{{ __('Reports') }}</a>
+                        </li>
                         @if(Auth::user()->account_type == 'admin')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('users') }}">{{ __('Users') }}</a>

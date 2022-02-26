@@ -13,7 +13,7 @@ class RequestItemDetail extends Model
     protected $dates = ['stock_month'];
     protected $casts = [
         // 'created_at' => 'datetime:Y-m-d h:i:s A',
-        'stock_month' => 'datetime:F Y',
+        // 'stock_month' => 'datetime:F Y',
     ];
 
     protected $appends = array(
@@ -44,5 +44,12 @@ class RequestItemDetail extends Model
         return Carbon::createFromTimestamp(strtotime($value))
         ->timezone(config('app.timezone'))
         ->format('Y-m-d h:i:s A');
+    }
+
+    public function getStockMonthAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('F Y');
     }
 }

@@ -37,6 +37,8 @@ class ItemDetailController extends Controller
                       ->orWhere('items.name', 'like', "%".$search."%");
             });
         }
+        $items->orderBy('stock_month');
+        $items->orderBy('serial_number');
         $items->paginate(10);
         // return DB::getQueryLog();
         return $items->paginate(10);
