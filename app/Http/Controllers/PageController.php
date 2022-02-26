@@ -73,7 +73,10 @@ class PageController extends Controller
         }
         $items = Item::all();
         foreach ($items as $item) {
-            $total_in = ItemHistory::where('item_id',$item->id)->where('history_type','in');
+            $total_in = ItemHistory::where('item_id',$item->id)->where(function ($query) {
+                $query->where('history_type','in')
+                      ->orWhere('history_type','stock_transfer');
+            });
             if($warehouse_id != ""){
                 $total_in->where('warehouse_id', $warehouse_id);
             }

@@ -163,7 +163,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
                     warehouse_id: this.user.warehouse_id
                 })
                 .then(res => {
-
+                    window.location.reload();
                 })
                 .catch(err => {})
                 .then(res => {})

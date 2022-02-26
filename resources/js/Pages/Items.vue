@@ -533,19 +533,19 @@
                 stockMonths: [],
                 itemFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     view_status: "default",
                 },
                 itemDetailFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     stock_month: ""
                 },
                 itemHistoryFilterData: {
                     page: 1,
-                    warehouse_id: this.user.account_type == 'warehhouse_admin' ? this.user.warehouse_id : "",
+                    warehouse_id: this.user.account_type == 'warehouse_admin' ? this.user.warehouse_id : "",
                     search: "",
                     history_type: "",
                 },
