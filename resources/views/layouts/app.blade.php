@@ -46,7 +46,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('reports') }}">{{ __('Reports') }}</a>
                         </li>
-                        @if(Auth::user()->account_type == 'admin')
+                        @if(Auth::user()->account_type == 'admin' || Auth::user()->account_type == 'warehouse_admin')
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('users') }}">{{ __('Users') }}</a>
                         </li>

@@ -27,7 +27,7 @@
 
                     <div class="form-group">
                             <label for="reorder_level">User Type</label>
-                            <select class="form-control" v-model="formData.account_type">
+                            <select class="form-control" v-model="formData.account_type" disabled="user.account_type == 'warehouse_admin'">
                                 <option value="">Select User Type</option>
                                 <!-- <option value="admin">Admin</option> -->
                                 <option value="warehouse_admin">Warehouse Admin</option>
@@ -62,15 +62,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(user, index) in users" :key="user.id" :class="{'table-secondary': (selectedUser.id == user.id)}">
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.name }}</td>
-                        <td>{{ user.account_type }}</td>
-                        <td>{{ user.warehouse ? user.warehouse.name : "" }}</td>
+                    <tr v-for="(userTable, index) in users" :key="userTable.id" :class="{'table-secondary': (selectedUser.id == userTable.id)}">
+                        <td>{{ userTable.email }}</td>
+                        <td>{{ userTable.name }}</td>
+                        <td>{{ userTable.account_type }}</td>
+                        <td>{{ userTable.warehouse ? userTable.warehouse.name : "" }}</td>
                         <td class="text-center ">
                             <div class="flex space-x-4">
-                                <span class="custom-pointer" @click="editSelectUser(user, index)">Edit</span> |
-                                <span class="custom-pointer" @click="deleteUser(user)">Delete</span>
+                                <span class="custom-pointer" @click="editSelectUser(userTable, index)" v-if="user.account_type == 'admin' || user.id == userTable.id">Edit</span>
+                                <span class="custom-pointer" @click="deleteUser(userTable)" v-if="user.account_type == 'admin'">| Delete</span>
                             </div>
                         </td>
                     </tr>
@@ -86,11 +86,11 @@
         mounted() {
             this.getUsers();
         },
-        props: ['warehouses'],
+        props: ['warehouses','user'],
         data() {
             return {
                 formData: {
-                    account_type: "",
+                    account_type: this.user.account_type == 'warehouse_admin' ? 'user' : "",
                     warehouse_id: ""
                 },
                 formErrors: [],
@@ -106,7 +106,7 @@
                 if(this.formData.account_type == 'admin'){
                     this.formData.warehouse_id = null;
                 }
-                if(this.formData.password.trim() == ''){
+                if(this.formData.password && this.formData.password.trim() == ''){
                     delete this.formData.password;
                 }
                 if(this.formType == 'create'){
