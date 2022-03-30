@@ -26,6 +26,7 @@ class ItemDetail extends Model
         'remarks',
         'warehouse_id',
         'stock_month',
+        'carton_number'
     ];
 
     // public static function boot()

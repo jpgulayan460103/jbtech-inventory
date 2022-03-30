@@ -178,6 +178,7 @@ class RequestItemController extends Controller
             foreach ($request->requestDataItems as $item) {
                 $req_item = RequestItemDetail::find($item['id']);
                 $req_item->fulfilled_quantity = $item['fulfilled_quantity'];
+                $req_item->is_rejected = $item['is_rejected'];
                 $req_item->save();
             }
             DB::commit();

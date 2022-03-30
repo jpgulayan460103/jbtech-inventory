@@ -24,7 +24,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(item, index) in clonedCreatedRequest.items" :key="index">
+                    <tr v-for="(item, index) in clonedCreatedRequest.items" :key="index" :class="{'table-danger': item.is_rejected == 1}">
                         <td>{{ item.item ? item.item.name : "" }}</td>
                         <td>{{ item.item ? item.item.category : "" }}</td>
                         <td>{{ item.item ? item.per_piece : "" }}</td>
@@ -32,11 +32,14 @@
                         <td>{{ item.item ? item.quantity : "" }}</td>
                         <td>{{ item.requested_quantity }}</td>
                         <td>{{ getScannedItemQuantity(item.item_id, item.per_piece) }}</td>
+                        <td>
+                            <button class="btn btn-primary" @click="item.is_rejected = 1" v-if="item.is_rejected != 1">Reject</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
             <button class="btn btn-primary" @click="processRequest()">Save</button>
-            <button class="btn btn-danger">Cancel</button>
+            <button class="btn btn-danger" @click="reload()">Cancel</button>
             </div>
         </div>
         <h3>SCANNED ITEMS</h3>
@@ -85,7 +88,9 @@
 <script>
     import _cloneDeep from 'lodash/cloneDeep'
     import _isEmpty from 'lodash/isEmpty'
+import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/js/Components/Button.vue';
     export default {
+  components: { Button },
         mounted() {
             this.clonedCreatedRequest = _cloneDeep(this.createdRequest);
         },
@@ -100,6 +105,13 @@
             }
         },
         methods: {
+            reload(){
+                window.location.reload()
+            },
+            rejectItem(index){
+                console.log(this.clonedCreatedRequest.items[index]);
+                this.clonedCreatedRequest.items[index].is_rejected = 1;
+            },
             scanItem(){
                 axios.get('/api/requests/items/scan', {
                     params: {
@@ -162,7 +174,7 @@
                     let item = this.clonedCreatedRequest.items[index];
                     let scannedQuantity = this.getScannedItemQuantity(item.item_id, item.per_piece);
                     this.clonedCreatedRequest.items[index].fulfilled_quantity = scannedQuantity;
-                    if(scannedQuantity != item.requested_quantity){
+                    if(scannedQuantity != item.requested_quantity && item.is_rejected != 1){
                         has_unfulfilled = true;
                         unfulfilled = item;
                         break;

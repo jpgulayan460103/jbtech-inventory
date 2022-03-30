@@ -105,6 +105,13 @@
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="remarks">Carton Number</label>
+                            <input type="text" class="form-control" v-model="addItemFormData.carton_number" placeholder="Enter Carton Number">
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label for="remarks">Remarks</label>
                             <input type="text" class="form-control" v-model="addItemFormData.remarks" placeholder="Enter Remarks">
                             <div class="invalid-feedback">
@@ -244,6 +251,7 @@
                         <tr>
                             <th scope="col">Item Name</th>
                             <th scope="col">Serial Number</th>
+                            <th scope="col">Carton Number</th>
                             <th scope="col">Stock Month</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
@@ -258,6 +266,7 @@
                                 <span :title="item.item.category">{{ item.item.name }}</span>
                             </td>
                             <td>{{ item.serial_number }}</td>
+                            <td>{{ item.carton_number }}</td>
                             <td>{{ item.stock_month }}</td>
                             <td>{{ item.quantity }}</td>
                             <td>{{ item.remarks }}</td>

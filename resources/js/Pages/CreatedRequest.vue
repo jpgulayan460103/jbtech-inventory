@@ -63,13 +63,14 @@
 
         <div class="row">
             <div class="col-md-12">
-                <table class="table" v-if="clonedCreatedRequest.status != 'processed'">
+                <table class="table no-print">
                     <thead>
                         <tr>
                             <th scope="col">Item Name</th>
                             <th scope="col">Category</th>
                             <th scope="col">Stock</th>
                             <th scope="col" style="text-align:center">Qty</th>
+                            <th scope="col" style="text-align:center" v-if="clonedCreatedRequest.status == 'processed'">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,10 +79,14 @@
                             <td>{{ item.item ? item.item.category : "" }}</td>
                             <td>{{ item.stock_month }}</td>
                             <td style="text-align:center">{{ item.requested_quantity }}</td>
+                            <td style="text-align:center" v-if="clonedCreatedRequest.status == 'processed'">
+                                <span v-if="item.is_rejected">Rejected</span>
+                                <span v-else>Processed</span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
-                <table class="table" v-else>
+                <table class="table">
                     <thead>
                         <tr>
                             <th scope="col">Item Name</th>

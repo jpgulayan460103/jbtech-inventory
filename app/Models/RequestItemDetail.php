@@ -13,7 +13,7 @@ class RequestItemDetail extends Model
     protected $dates = ['stock_month'];
     protected $casts = [
         // 'created_at' => 'datetime:Y-m-d h:i:s A',
-        // 'stock_month' => 'datetime:F Y',
+        'is_rejected' => 'boolean',
     ];
 
     protected $appends = array(
@@ -27,6 +27,8 @@ class RequestItemDetail extends Model
         'quantity',
         'fulfilled_quantity',
         'stock_month',
+        'remarks',
+        'is_rejected',
     ];
 
     public function item()
