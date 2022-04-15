@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\ItemDetail;
 use App\Models\ItemHistory;
 use App\Models\RequestItem;
 use Illuminate\Http\Request;
 use App\Models\Warehouse;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends Controller
 {
@@ -71,25 +74,60 @@ class PageController extends Controller
                 $warehouse_id = $request->warehouse;
             }
         }
-        $items = Item::all();
+        $date = "2022-04-01";
+        $query_start_day = Carbon::parse($date)->copy()->firstOfMonth();
+        $query_end_day = Carbon::parse($date)->copy()->lastOfMonth()->addDay()->subSecond();
+        $last_query_start_day = Carbon::parse($query_start_day)->copy()->subSecond()->firstOfMonth();
+        $last_query_end_day = Carbon::parse($last_query_start_day)->copy()->lastOfMonth()->addDay()->subSecond();
+        $items = Item::orderBy('category')->orderBy('name')->get();
         foreach ($items as $item) {
-            $total_in = ItemHistory::where('item_id',$item->id)->where(function ($query) {
+            if($item->total_remain){
+                $item->total_remain = $item->total_remain->remain;
+            }else{
+                $item->total_remain = 0;
+            }
+            $previous_in = ItemHistory::where('item_id',$item->id)->where('created_at',"<=", $last_query_end_day)->where(function ($query) {
                 $query->where('history_type','in')
                       ->orWhere('history_type','stock_transfer');
             });
+            $previous_in = $previous_in->sum('quantity');
+            // return $previous_in;
+
+
+            //prev
+            $previous_out = ItemHistory::where('item_id',$item->id)->where('created_at',"<=", $last_query_end_day)->where(function ($query) {
+                $query->where('history_type','out')
+                      ->orWhere('history_type','deleted');
+            });
+            $previous_out = $previous_out->sum('quantity');
+
+            $previous_total_in = $previous_in - $previous_out;
+
+
+
+            $total_in = ItemHistory::where('item_id',$item->id)->whereBetween('created_at',[$query_start_day, $query_end_day])->where('history_type','in');
+            $total_stock_transfer = ItemHistory::where('item_id',$item->id)->whereBetween('created_at',[$query_start_day, $query_end_day])->where('history_type','stock_transfer');
             if($warehouse_id != ""){
                 $total_in->where('warehouse_id', $warehouse_id);
+                $total_stock_transfer->where('warehouse_id', $warehouse_id);
             }
+            $item->previous_remaining = $previous_total_in;
             $item->total_in = $total_in->sum('quantity');
-            $total_out = ItemHistory::where('item_id',$item->id)->where('history_type','out');
+            $item->total_stock_transfer = $total_stock_transfer->sum('quantity');
+            $total_out = ItemHistory::where('item_id',$item->id)->whereBetween('created_at',[$query_start_day, $query_end_day])->where('history_type','out');
+            $total_deleted = ItemHistory::where('item_id',$item->id)->whereBetween('created_at',[$query_start_day, $query_end_day])->where('history_type','deleted');
             if($warehouse_id != ""){
                 $total_out->where('warehouse_id', $warehouse_id);
+                $total_deleted->where('warehouse_id', $warehouse_id);
             }
             $item->total_out = $total_out->sum('quantity');
-            $item->total_remaining = $item->total_in - $item->total_out;
+            $item->total_deleted = $total_deleted->sum('quantity');
+            $item->total_remaining = ($item->total_in + $item->total_stock_transfer) + $previous_total_in - ($item->total_out + $item->total_deleted);
         }
         $user = Auth::user();
         $warehouses = Warehouse::all();
-        return view('reports', compact('items','user','warehouses', 'warehouse_id'));
+        // return $items;
+        $date = Carbon::parse($date)->format("F Y");
+        return view('reports', compact('items','user','warehouses', 'warehouse_id', 'date'));
     }
 }

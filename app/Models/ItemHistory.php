@@ -10,6 +10,8 @@ use App\Models\ItemDetail;
 use App\Models\RequestItem;
 use App\Models\User;
 use App\Models\Warehouse;
+use Carbon\Carbon;
+
 class ItemHistory extends Model
 {
     use SoftDeletes;
@@ -49,5 +51,12 @@ class ItemHistory extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::createFromTimestamp(strtotime($value))
+        ->timezone(config('app.timezone'))
+        ->format('Y-m-d h:i:s A');
     }
 }
