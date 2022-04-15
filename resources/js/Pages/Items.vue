@@ -335,7 +335,7 @@
                             <th scope="col">Quantity</th>
                             <th scope="col">Remarks</th>
                             <th scope="col">Warehouse</th>
-                            <th scope="col">Added</th>
+                            <th scope="col">DateTime</th>
                             <th scope="col">Previous Qty</th>
                             <th scope="col">Remaining Qty</th>
                             <th scope="col">Request Number</th>
@@ -361,7 +361,7 @@
                                 <span v-else>{{ item.item_detail.remarks }}</span>
                             </td>
                             <td>{{ item.warehouse.name }}</td>
-                            <td>{{ item.item_detail.created_at }}</td>
+                            <td>{{ item.created_at }}</td>
                             <td>{{ item.stock }}</td>
                             <td>{{ item.remain }}</td>
                             <td>
@@ -492,6 +492,7 @@
     import VueTypeaheadBootstrap from 'vue-typeahead-bootstrap';
     import isEmpty from 'lodash/isEmpty';
     import cloneDeep from 'lodash/cloneDeep';
+    import _debounce from 'lodash/debounce'
     export default {
         async mounted() {
             // console.log('Component mounted.')
@@ -608,7 +609,7 @@
                 }
             },
 
-            async createItem(){
+            createItem: _debounce(async() => {
                 this.createItemFormError = {};
                 axios.post('/api/items', this.createItemFormData)
                 .then(res => {
@@ -628,9 +629,9 @@
                 })
                 .then(res => {})
                 ;
-            },
+            }, 150),
 
-            async updateItem(){
+            updateItem: _debounce(async () => {
                 this.createItemFormError = {};
                 axios.put(`/api/items/${this.createItemFormData.id}`, this.createItemFormData)
                 .then(res => {
@@ -655,8 +656,8 @@
                 })
                 .then(res => {})
                 ;
-            },
-            async addItem(){
+            }),
+            addItem: _debounce(async () => {
                 this.addItemDetailFormErrors = {};
                 axios.post(`/api/items/${this.addItemFormData.item_id}/serial`, this.addItemFormData)
                 .then(async res => {
@@ -675,7 +676,7 @@
                     this.addItemDetailFormErrors = err.response.data.errors;
                 })
                 .then(res => {});
-            },
+            }, 150),
             async selectItem(item, index){
                 this.formType = "add_items";
                 this.selectedItem = item;
@@ -827,7 +828,7 @@
                         'width=960,height=1080');
                     return false;
             },
-            async archiveItem(item, value){
+            archiveItem: _debounce(async (item, value) => {
                 item = cloneDeep(item);
                 item.is_archived = value;
                 axios.put(`/api/items/${item.id}`, item)
@@ -846,11 +847,11 @@
                 .catch(err => { })
                 .then(res => {})
                 ;
-            },
+            }, 150),
             async deleteSerialNumber(item){
                 this.selectedSerial = cloneDeep(item);
             },
-            async deleteSerialPhp(){
+            deleteSerialPhp: _debounce(async () => {
                 document.getElementById('closeDeleteModal').click();
                 this.selectedSerial.user_id = this.user.id;
                 axios.put(`/api/items/${this.selectedSerial.item_id}/details/${this.selectedSerial.id}`, this.selectedSerial)
@@ -869,7 +870,7 @@
                 await this.getCategories();
                 await this.getItemDetails();
                 await this.getItemHistory();
-            }
+            }, 150),
         },
         computed: {
             sampleBarcode(){

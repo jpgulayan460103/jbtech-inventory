@@ -86,6 +86,7 @@
 </style>
 
 <script>
+import _debounce from 'lodash/debounce'
     import _cloneDeep from 'lodash/cloneDeep'
     import _isEmpty from 'lodash/isEmpty'
 import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/js/Components/Button.vue';
@@ -167,7 +168,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
             removeItem(item_detail_id){
                 this.scannedItems = this.scannedItems.filter(i => i.id != item_detail_id);
             },
-            processRequest(){
+            processRequest: _debounce(() => {
                 let has_unfulfilled = false;
                 var unfulfilled = {};
                 for (let index = 0; index < this.clonedCreatedRequest.items.length; index++) {
@@ -209,7 +210,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
                         .catch(res => {})
                         .then(res => {})
                 }
-            }
+            }, 150),
         },
         computed: {
             

@@ -143,6 +143,7 @@
 
 <script>
     import _cloneDeep from 'lodash/cloneDeep'
+    import _debounce from 'lodash/debounce'
 import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/js/Components/Button.vue';
     export default {
   components: { Button },
@@ -162,7 +163,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
             printRq(){
                 window.print()
             },
-            receiveItems(){
+            receiveItems: _debounce(() => {
                 axios.post(`/api/request/${this.createdRequest.id}/receive`, {
                     user_id: this.user.id,
                     warehouse_id: this.user.warehouse_id
@@ -172,8 +173,8 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
                 })
                 .catch(err => {})
                 .then(res => {})
-            },
-            submitRejectForm() {
+            }, 150),
+            submitRejectForm: _debounce(() => {
                 axios.put(`/api/request/${this.createdRequest.id}`, {
                     status: 'rejected',
                     reject_remarks: this.rejectFormData.reject_remarks,
@@ -183,7 +184,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
                 })
                 .catch(err => {})
                 .then(res => {})
-            }
+            }, 150)
         }
     }
 </script>

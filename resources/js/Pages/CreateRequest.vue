@@ -182,7 +182,7 @@
                             type: "error"
                         });
             },200),
-            async createRequest(){
+            createRequest: debounce(async () => {
                 this.formErrors = [];
                 var has_error = false;
                 this.requestFormData.items.forEach(item => {
@@ -207,7 +207,7 @@
                 })
                 .then(res => {})
                 ;
-            },
+            }, 150),
             resetForms(){
                 this.requestFormData = {
                     warehouse_id: 1,

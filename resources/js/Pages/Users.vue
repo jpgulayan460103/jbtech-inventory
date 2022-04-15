@@ -82,6 +82,7 @@
 </template>
 
 <script>
+    import _debounce from 'lodash/debounce'
     export default {
         mounted() {
             this.getUsers();
@@ -137,7 +138,7 @@
                 ;
             },
 
-            async updateUsers(){
+            updateUsers: _debounce(async () => {
                 this.formErrors = {};
                 axios.put(`/api/users/${this.formData.id}`, this.formData)
                 .then(res => {
@@ -153,7 +154,7 @@
                 })
                 .then(res => {})
                 ;
-            },
+            }, 150),
             editSelectUser(user, index){
                 this.formType = "update";
                 this.selectedUser = user;

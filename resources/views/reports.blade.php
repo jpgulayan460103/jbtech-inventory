@@ -7,6 +7,6 @@
 
     @section('content')
     <h1 style="text-align: center">Reports</h1>
-    <reports-index :warehouses="{{ $warehouses }}" :report-data="{{ $items }}" :user="{{ $user }}" warehouse-id="{{ $warehouse_id }}"></reports-index>
+    <reports-index :warehouses="{{ $warehouses }}" :report-data="{{ $items }}" :user="{{ $user }}" warehouse-id="{{ $warehouse_id }}" date="{{ $date }}"></reports-index>
     @endsection
 </x-app-layout>
