@@ -163,7 +163,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
             printRq(){
                 window.print()
             },
-            receiveItems: _debounce(() => {
+            receiveItems: _debounce(function() {
                 axios.post(`/api/request/${this.createdRequest.id}/receive`, {
                     user_id: this.user.id,
                     warehouse_id: this.user.warehouse_id
@@ -174,7 +174,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
                 .catch(err => {})
                 .then(res => {})
             }, 150),
-            submitRejectForm: _debounce(() => {
+            submitRejectForm: _debounce(function() {
                 axios.put(`/api/request/${this.createdRequest.id}`, {
                     status: 'rejected',
                     reject_remarks: this.rejectFormData.reject_remarks,

@@ -168,7 +168,7 @@ import Button from '../../../vendor/laravel/breeze/stubs/inertia-vue/resources/j
             removeItem(item_detail_id){
                 this.scannedItems = this.scannedItems.filter(i => i.id != item_detail_id);
             },
-            processRequest: _debounce(() => {
+            processRequest: _debounce(function() {
                 let has_unfulfilled = false;
                 var unfulfilled = {};
                 for (let index = 0; index < this.clonedCreatedRequest.items.length; index++) {

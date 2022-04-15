@@ -138,7 +138,7 @@
                 ;
             },
 
-            updateUsers: _debounce(async () => {
+            updateUsers: _debounce(async function() {
                 this.formErrors = {};
                 axios.put(`/api/users/${this.formData.id}`, this.formData)
                 .then(res => {

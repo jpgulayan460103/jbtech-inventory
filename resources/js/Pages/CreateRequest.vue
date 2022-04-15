@@ -182,7 +182,7 @@
                             type: "error"
                         });
             },200),
-            createRequest: debounce(async () => {
+            createRequest: debounce(async function() {
                 this.formErrors = [];
                 var has_error = false;
                 this.requestFormData.items.forEach(item => {

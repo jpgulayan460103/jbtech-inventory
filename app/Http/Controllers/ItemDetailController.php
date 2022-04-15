@@ -38,7 +38,7 @@ class ItemDetailController extends Controller
             });
         }
         // $items->orderBy('stock_month');
-        $items->orderBy('id', "DESC");
+        $items->orderBy('item_details.id', "DESC");
         $items->paginate(10);
         // return DB::getQueryLog();
         return $items->paginate(10);

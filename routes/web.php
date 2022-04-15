@@ -31,6 +31,8 @@ Route::get('/requests/{id}/process', [PageController::class, 'request_process'])
 Route::get('/users', [PageController::class, 'users'])->middleware(['auth'])->name('users');
 Route::get('/generate/barcode', [PageController::class, 'generateBarcode'])->middleware(['auth'])->name('generate-barcode');
 Route::get('/reports', [PageController::class, 'reports'])->middleware(['auth'])->name('reports');
+Route::get('/reports/generate', [PageController::class, 'generateReports'])->middleware(['auth'])->name('generate-reports');
+Route::post('/reports/generate/excel', [PageController::class, 'generateExcelReport'])->middleware(['auth'])->name('generate-excel-reports');
 
 require __DIR__.'/auth.php';
 

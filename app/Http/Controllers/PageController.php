@@ -11,6 +11,7 @@ use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PageController extends Controller
 {
@@ -66,15 +67,27 @@ class PageController extends Controller
 
     public function reports(Request $request)
     {
+        $user = Auth::user();
+        $warehouses = Warehouse::all();
+        $items = Item::orderBy('category')->orderBy('name')->get();
+        return view('reports', compact('warehouses','items','user'));
+    }
+
+    public function generateReports(Request $request)
+    {
         $warehouse_id = "";
         if(Auth::user()->account_type == 'warehouse_admin'){
             $warehouse_id = Auth::user()->warehouse_id;
         }else{
-            if($request->warehouse){
-                $warehouse_id = $request->warehouse;
+            if($request->warehouse_id){
+                $warehouse_id = $request->warehouse_id;
             }
         }
-        $date = "2022-04-01";
+        if($request->date){
+            $date = Carbon::parse($request->date);
+        }else{
+            $date = Carbon::now()->toDateString();
+        }
         $query_start_day = Carbon::parse($date)->copy()->firstOfMonth();
         $query_end_day = Carbon::parse($date)->copy()->lastOfMonth()->addDay()->subSecond();
         $last_query_start_day = Carbon::parse($query_start_day)->copy()->subSecond()->firstOfMonth();
@@ -124,10 +137,68 @@ class PageController extends Controller
             $item->total_deleted = $total_deleted->sum('quantity');
             $item->total_remaining = ($item->total_in + $item->total_stock_transfer) + $previous_total_in - ($item->total_out + $item->total_deleted);
         }
-        $user = Auth::user();
-        $warehouses = Warehouse::all();
         // return $items;
         $date = Carbon::parse($date)->format("F Y");
-        return view('reports', compact('items','user','warehouses', 'warehouse_id', 'date'));
+        return [
+            'items' => $items->toArray(),
+            'date' => $date,
+            'warehouse_id' => $warehouse_id,
+            'uuid' => Str::uuid()
+        ];
+    }
+
+    public function generateExcelReport(Request $request)
+    {
+        $report = $this->generateReports($request);
+        $warehouse_name = "";
+        if($report['warehouse_id']){
+            $warehouse_name = Warehouse::find($report['warehouse_id'])->name;
+        }
+        $list = [
+            [
+                "Month:",
+                $report['date'],
+                "Warehouse:",
+                $warehouse_name,
+            ],
+            [
+                'Item ID',
+                'Category',
+                'Item Name',
+                'Starting',
+                'In',
+                'Transferred',
+                'Out',
+                'Deleted',
+                'Remaining',
+            ]
+        ];
+          
+        $path = "generated/jbtech-inventory-report-".$report['date'].".csv";
+        $file = fopen($path,"w");
+        
+        foreach ($list as $line) {
+            fputcsv($file, $line);
+        }
+        
+        foreach ($report['items'] as $item) {
+            $line = [
+                $item['id'],
+                $item['category'],
+                $item['name'],
+                $item['previous_remaining'],
+                $item['total_in'],
+                $item['total_stock_transfer'],
+                $item['total_out'],
+                $item['total_deleted'],
+                $item['total_remaining'],
+            ];
+            fputcsv($file, $line);
+        }
+        
+        fclose($file);
+        return [
+            "path" => $path
+        ];
     }
 }

@@ -5,8 +5,8 @@
         </h2>
     </x-slot>
 
-    @section('content')
+    @section('contentFluid')
     <h1 style="text-align: center">Reports</h1>
-    <reports-index :warehouses="{{ $warehouses }}" :report-data="{{ $items }}" :user="{{ $user }}" warehouse-id="{{ $warehouse_id }}" date="{{ $date }}"></reports-index>
+    <reports-index :warehouses="{{ $warehouses }}" :items="{{ $items }}" :user="{{ $user }}"></reports-index>
     @endsection
 </x-app-layout>

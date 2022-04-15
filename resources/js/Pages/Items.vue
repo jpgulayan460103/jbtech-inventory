@@ -492,7 +492,7 @@
     import VueTypeaheadBootstrap from 'vue-typeahead-bootstrap';
     import isEmpty from 'lodash/isEmpty';
     import cloneDeep from 'lodash/cloneDeep';
-    import _debounce from 'lodash/debounce'
+    import debounce from 'lodash/debounce'
     export default {
         async mounted() {
             // console.log('Component mounted.')
@@ -609,7 +609,7 @@
                 }
             },
 
-            createItem: _debounce(async() => {
+            createItem: debounce(async function() {
                 this.createItemFormError = {};
                 axios.post('/api/items', this.createItemFormData)
                 .then(res => {
@@ -631,7 +631,7 @@
                 ;
             }, 150),
 
-            updateItem: _debounce(async () => {
+            updateItem: debounce(async function() {
                 this.createItemFormError = {};
                 axios.put(`/api/items/${this.createItemFormData.id}`, this.createItemFormData)
                 .then(res => {
@@ -657,7 +657,7 @@
                 .then(res => {})
                 ;
             }),
-            addItem: _debounce(async () => {
+            addItem: debounce(async function() {
                 this.addItemDetailFormErrors = {};
                 axios.post(`/api/items/${this.addItemFormData.item_id}/serial`, this.addItemFormData)
                 .then(async res => {
@@ -828,7 +828,7 @@
                         'width=960,height=1080');
                     return false;
             },
-            archiveItem: _debounce(async (item, value) => {
+            archiveItem: debounce(async function(item, value) {
                 item = cloneDeep(item);
                 item.is_archived = value;
                 axios.put(`/api/items/${item.id}`, item)
@@ -851,7 +851,7 @@
             async deleteSerialNumber(item){
                 this.selectedSerial = cloneDeep(item);
             },
-            deleteSerialPhp: _debounce(async () => {
+            deleteSerialPhp: debounce(async function() {
                 document.getElementById('closeDeleteModal').click();
                 this.selectedSerial.user_id = this.user.id;
                 axios.put(`/api/items/${this.selectedSerial.item_id}/details/${this.selectedSerial.id}`, this.selectedSerial)
