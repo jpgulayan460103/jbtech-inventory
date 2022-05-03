@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid">
-        <div class="row" v-if="user.account_type == 'admin'">
+        <div class="row">
             <div class="col-md-2">
                 Select Warehouse
                 <select class="form-control form-control-sm" v-model="warehouse_id" @change="changeWarehouse">
